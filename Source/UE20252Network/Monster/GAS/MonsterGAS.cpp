@@ -2,15 +2,15 @@
 
 
 #include "MonsterGAS.h"
-#include "../../GameMode/AssetGameInstanceSubsystem.h"
-#include "MonsterGASController.h"
-#include "MonsterGASAnimInstance.h"
-#include "../../Etc/ItemBox.h"
 #include "MonsterAttributeSet.h"
-#include "../../GAS/GameplayAbility_Attack.h"
-#include "../../Player/GAS/PlayerCharacterGAS.h"
+#include "MonsterGASAnimInstance.h"
+#include "MonsterGASController.h"
+#include "../../Etc/ItemBox.h"
+#include "../../GameMode/AssetGameInstanceSubsystem.h"
 #include "../../GAS/Effect/GameplayEffect_Gold.h"
+#include "../../Player/GAS/PlayerCharacterGAS.h"
 #include "Net/UnrealNetwork.h"
+#include "UE20252Network/GAS/GameplayAbility_MonsterAttack.h"
 
 AMonsterGAS::AMonsterGAS()
 {
@@ -127,7 +127,7 @@ void AMonsterGAS::BeginPlay()
 	// AbilitySystemComponent에 Owner와 Avatar를 등록한다.
 	mASC->InitAbilityActorInfo(this, this);
 
-	mASC->GiveAbility(FGameplayAbilitySpec(UGameplayAbility_Attack::StaticClass(),
+	mASC->GiveAbility(FGameplayAbilitySpec(UGameplayAbility_MonsterAttack::StaticClass(),
 		1, 0));
 
 	if (HasAuthority())

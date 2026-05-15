@@ -17,15 +17,16 @@ void UMonsterGASAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UMonsterGASAnimInstance::AnimNotify_Attack()
 {
-	TObjectPtr<AMonsterGAS>	Monster = Cast<AMonsterGAS>(TryGetPawnOwner());
-
-	Monster->NormalAttack();
+	auto* Monster = Cast<AMonsterGAS>(TryGetPawnOwner());
+	if (Monster->HasAuthority())
+	{
+		Monster->NormalAttack();
+	}
 }
 
 void UMonsterGASAnimInstance::AnimNotify_AttackEnd()
 {
 	const auto* Monster = Cast<AMonsterGAS>(TryGetPawnOwner());
-
 	if (Monster->HasAuthority())
 	{
 		auto* AIController = Monster->GetController<AAIController>();
@@ -36,9 +37,11 @@ void UMonsterGASAnimInstance::AnimNotify_AttackEnd()
 
 void UMonsterGASAnimInstance::AnimNotify_Death()
 {
-	TObjectPtr<AMonsterGAS>	Monster = Cast<AMonsterGAS>(TryGetPawnOwner());
-
-	Monster->Death();
+	auto* Monster = Cast<AMonsterGAS>(TryGetPawnOwner());
+	if (Monster->HasAuthority())
+	{
+		Monster->Death();
+	}
 }
 
 void UMonsterGASAnimInstance::AnimNotify_HitEnd()
