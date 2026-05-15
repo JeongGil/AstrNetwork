@@ -10,6 +10,7 @@
 #include "../../GAS/GameplayAbility_Attack.h"
 #include "../../Player/GAS/PlayerCharacterGAS.h"
 #include "../../GAS/Effect/GameplayEffect_Gold.h"
+#include "Net/UnrealNetwork.h"
 
 AMonsterGAS::AMonsterGAS()
 {
@@ -65,10 +66,34 @@ AMonsterGAS::AMonsterGAS()
 
 void AMonsterGAS::ChangeAnim(EMonsterNormalAnim Anim)
 {
+	// 이 함수는 서버에서 동작하고 있다.
+	// 그렇기 때문에 모든 클라이언트에게 애니메이션을 변경하려면 크게 2가지 방법이 있다.
+	// 1. RPC NetMulticast를 이용하여 모든 클라이언트의 함수를 호출하고 변경하게 한다.
+	// 2. MonsterGAS 에 멤버변수를 만들고 이 값을 Replicate 한다.
+	AnimType = Anim;
+
+	// 서버 AnimInstance의 AnimType을 변경한다.
 	if (IsValid(mAnimInst))
 	{
 		mAnimInst->SetAnim(Anim);
 	}
+}
+
+void AMonsterGAS::OnRep_ChangeAnimType()
+{
+	if (HasAuthority())
+	{
+		return;
+	}
+
+	if (IsValid(mAnimInst))
+	{
+		mAnimInst->SetAnim(AnimType);
+	}
+}
+
+void AMonsterGAS::OnRep_ChangeHitAlpha()
+{
 }
 
 void AMonsterGAS::BeginPlay()
@@ -105,23 +130,34 @@ void AMonsterGAS::BeginPlay()
 	mASC->GiveAbility(FGameplayAbilitySpec(UGameplayAbility_Attack::StaticClass(),
 		1, 0));
 
-	const FMonsterInfo* Info = AssetSubSystem->FindMonsterInfo(mDataName);
-
-	if (!Info)
+	if (HasAuthority())
 	{
-		// 정보를 얻어오지 못한 경우에는 비동기 로딩이 아직 완료되지 않았다는 의미이다. 그러므로 서브시스템에
-		// 함수를 등록하여 로딩이 완료된 후 데이터 세팅을 할 수 있게 한다.
-		AssetSubSystem->mMonsterInfoLoadDelegate.AddUObject(this, &AMonsterGAS::MonsterInfoLoadComplete);
+		const FMonsterInfo* Info = AssetSubSystem->FindMonsterInfo(mDataName);
 
-		return;
+		if (!Info)
+		{
+			// 정보를 얻어오지 못한 경우에는 비동기 로딩이 아직 완료되지 않았다는 의미이다. 그러므로 서브시스템에
+			// 함수를 등록하여 로딩이 완료된 후 데이터 세팅을 할 수 있게 한다.
+			AssetSubSystem->mMonsterInfoLoadDelegate.AddUObject(this, &AMonsterGAS::MonsterInfoLoadComplete);
+
+			return;
+		}
+
+		MonsterInfoLoadComplete();
 	}
-
-	MonsterInfoLoadComplete();
 }
 
 void AMonsterGAS::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
+}
+
+void AMonsterGAS::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AMonsterGAS, AnimType);
+	DOREPLIFETIME(AMonsterGAS, HitAlpha);
 }
 
 void AMonsterGAS::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -394,7 +430,7 @@ void AMonsterGAS::CallbackHP(AActor* InstigatorActor)
 		if (IsValid(PlayerCharacter))
 		{
 			UAbilitySystemComponent* PlayerASC = PlayerCharacter->GetAbilitySystemComponent();
-			
+
 			// Gold 증가용 GameplayEffect를 이용하여 SetByCaller로 증가할 골드를 지정하고
 			// GameplayEffect를 동작시켜준다.
 			FGameplayEffectContextHandle	ContextHandle = PlayerASC->MakeEffectContext();

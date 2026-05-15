@@ -2,8 +2,8 @@
 
 
 #include "AssetGameInstanceSubsystem.h"
-//#include "../Monster/MonsterInfoTableAsset.h"
-//#include "../Monster/DropItemInfoTableAsset.h"
+#include "../Monster/MonsterInfoTableAsset.h"
+#include "../Monster/DropItemInfoTableAsset.h"
 #include "../Etc/ItemInfoTableAsset.h"
 #include "Engine/AssetManager.h"
 
@@ -37,33 +37,33 @@ void UAssetGameInstanceSubsystem::LoadMonsterData()
 
 void UAssetGameInstanceSubsystem::MonsterInfoLoadComplete(FPrimaryAssetId LoadId)
 {
-	//UAssetManager& AssetMgr = UAssetManager::Get();
+	UAssetManager& AssetMgr = UAssetManager::Get();
 
-	//// 로딩된 오브젝트를 얻어온다.
-	//TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
+	// 로딩된 오브젝트를 얻어온다.
+	TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
 
-	//TObjectPtr<UMonsterInfoTableAsset>	DataAsset = 
-	//	Cast<UMonsterInfoTableAsset>(LoadObject);
+	TObjectPtr<UMonsterInfoTableAsset>	DataAsset =
+		Cast<UMonsterInfoTableAsset>(LoadObject);
 
-	//if (!DataAsset)
-	//{
-	//	UE_LOG(UELOG, Warning, TEXT("MonsterInfo Load Failed"));
-	//	return;
-	//}
+	if (!DataAsset)
+	{
+		UE_LOG(UELOG, Warning, TEXT("MonsterInfo Load Failed"));
+		return;
+	}
 
-	//mMonsterInfoTable = DataAsset->mTable.LoadSynchronous();
+	mMonsterInfoTable = DataAsset->mTable.LoadSynchronous();
 
-	//if (!mMonsterInfoTable)
-	//{
-	//	UE_LOG(UELOG, Warning, TEXT("MonsterInfo DataTable Load Failed"));
-	//	return;
-	//}
+	if (!mMonsterInfoTable)
+	{
+		UE_LOG(UELOG, Warning, TEXT("MonsterInfo DataTable Load Failed"));
+		return;
+	}
 
-	//UE_LOG(UELOG, Warning, TEXT("MonsterInfo Load Complete"));
+	UE_LOG(UELOG, Warning, TEXT("MonsterInfo Load Complete"));
 
-	//// 등록된 함수를 호출한다.
-	//if (mMonsterInfoLoadDelegate.IsBound())
-	//	mMonsterInfoLoadDelegate.Broadcast();
+	// 등록된 함수를 호출한다.
+	if (mMonsterInfoLoadDelegate.IsBound())
+		mMonsterInfoLoadDelegate.Broadcast();
 }
 
 const FMonsterInfo* UAssetGameInstanceSubsystem::FindMonsterInfo(const FName& Name)	const
@@ -139,33 +139,33 @@ void UAssetGameInstanceSubsystem::LoadDropItemData()
 
 void UAssetGameInstanceSubsystem::DropItemInfoLoadComplete(FPrimaryAssetId LoadId)
 {
-	//UAssetManager& AssetMgr = UAssetManager::Get();
+	UAssetManager& AssetMgr = UAssetManager::Get();
 
-	//// 로딩된 오브젝트를 얻어온다.
-	//TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
+	// 로딩된 오브젝트를 얻어온다.
+	TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
 
-	//TObjectPtr<UDropItemInfoTableAsset>	DataAsset =
-	//	Cast<UDropItemInfoTableAsset>(LoadObject);
+	TObjectPtr<UDropItemInfoTableAsset>	DataAsset =
+		Cast<UDropItemInfoTableAsset>(LoadObject);
 
-	//if (!DataAsset)
-	//{
-	//	UE_LOG(UELOG, Warning, TEXT("DropItemInfo Load Failed"));
-	//	return;
-	//}
+	if (!DataAsset)
+	{
+		UE_LOG(UELOG, Warning, TEXT("DropItemInfo Load Failed"));
+		return;
+	}
 
-	//mDropItemInfoTable = DataAsset->mTable.LoadSynchronous();
+	mDropItemInfoTable = DataAsset->mTable.LoadSynchronous();
 
-	//if (!mDropItemInfoTable)
-	//{
-	//	UE_LOG(UELOG, Warning, TEXT("DropItemInfo DataTable Load Failed"));
-	//	return;
-	//}
+	if (!mDropItemInfoTable)
+	{
+		UE_LOG(UELOG, Warning, TEXT("DropItemInfo DataTable Load Failed"));
+		return;
+	}
 
-	//UE_LOG(UELOG, Warning, TEXT("DropItemInfo Load Complete"));
+	UE_LOG(UELOG, Warning, TEXT("DropItemInfo Load Complete"));
 
-	//// 등록된 함수를 호출한다.
-	//if (mDropItemInfoLoadDelegate.IsBound())
-	//	mDropItemInfoLoadDelegate.Broadcast();
+	// 등록된 함수를 호출한다.
+	if (mDropItemInfoLoadDelegate.IsBound())
+		mDropItemInfoLoadDelegate.Broadcast();
 }
 
 const FDropItemTableInfo* UAssetGameInstanceSubsystem::FindDropItemInfo(

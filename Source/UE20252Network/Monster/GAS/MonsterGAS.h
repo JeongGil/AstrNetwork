@@ -63,6 +63,12 @@ protected:
 	float					mDissolve = 0.5f;
 	float					mDissolveTime = 3.f;
 
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_ChangeAnimType)
+	EMonsterNormalAnim AnimType;
+
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_ChangeHitAlpha)
+	float HitAlpha;
+
 public:
 	class UMonsterAttributeSet* GetAttributeSet()	const
 	{
@@ -106,12 +112,19 @@ public:
 
 	void ChangeAnim(EMonsterNormalAnim Anim);
 
+	UFUNCTION()
+	void OnRep_ChangeAnimType();
+
+	UFUNCTION()
+	void OnRep_ChangeHitAlpha();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
 public:
 	virtual void OnConstruction(const FTransform& Transform);
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void Tick(float DeltaTime) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 

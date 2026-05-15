@@ -24,11 +24,14 @@ void UMonsterGASAnimInstance::AnimNotify_Attack()
 
 void UMonsterGASAnimInstance::AnimNotify_AttackEnd()
 {
-	TObjectPtr<AMonsterGAS>	Monster = Cast<AMonsterGAS>(TryGetPawnOwner());
+	const auto* Monster = Cast<AMonsterGAS>(TryGetPawnOwner());
 
-	TObjectPtr<AAIController>	AIController = Monster->GetController<AAIController>();
+	if (Monster->HasAuthority())
+	{
+		auto* AIController = Monster->GetController<AAIController>();
 
-	AIController->GetBlackboardComponent()->SetValueAsBool(TEXT("AttackEnd"), true);
+		AIController->GetBlackboardComponent()->SetValueAsBool(TEXT("AttackEnd"), true);
+	}
 }
 
 void UMonsterGASAnimInstance::AnimNotify_Death()

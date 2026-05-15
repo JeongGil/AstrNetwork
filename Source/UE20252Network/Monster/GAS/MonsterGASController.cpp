@@ -50,6 +50,8 @@ void AMonsterGASController::BeginPlay()
 
 	// 시작할 때 강제로 주변을 탐색하게 갱신한다.
 	mAIPerception->RequestStimuliListenerUpdate();
+
+	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("MonsterController"));
 }
 
 void AMonsterGASController::OnPossess(APawn* aPawn)

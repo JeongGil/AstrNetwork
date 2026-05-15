@@ -73,6 +73,11 @@ APlayerCharacterGAS::APlayerCharacterGAS()
 	// AbilitySystemComponent가 AttributeSet을 가지고 있게 한다.
 	mASC->AddAttributeSetSubobject<UPlayerAttributeSet>(mAttributeSet);
 
+	mASC->SetIsReplicated(true);
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
+
 	//mInventoryCom = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 
 	/*static ConstructorHelpers::FClassFinder<UCameraShakeBase>	DefaultShake(TEXT("/Script/Engine.Blueprint'/Game/Blueprints/BPLGShake.BPLGShake_C'"));
@@ -175,7 +180,7 @@ void APlayerCharacterGAS::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		Input->BindAction(InputData->FindAction(TEXT("Skill3")), ETriggerEvent::Started,
 			this, &APlayerCharacterGAS::Skill3Key);
 
-		Input->BindAction(InputData->FindAction(TEXT("ColorChange")), 
+		Input->BindAction(InputData->FindAction(TEXT("ColorChange")),
 			ETriggerEvent::Completed,
 			this, &APlayerCharacterGAS::ColorChangeKey);
 	}
@@ -262,7 +267,7 @@ void APlayerCharacterGAS::AttackKey(const FInputActionValue& Value)
 	//	ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	//// GetWorld() 함수는 World의 객체를 얻어온다.
-	//TObjectPtr<ATestBullet>	Bullet = 
+	//TObjectPtr<ATestBullet>	Bullet =
 	//	GetWorld()->SpawnActor<ATestBullet>(SpawnLoc, GetActorRotation(), param);
 
 	//Bullet->SetLifeSpan(5.f);

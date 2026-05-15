@@ -7,7 +7,7 @@ public class UE20252Network : ModuleRules
 	public UE20252Network(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
+
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core",
 			"CoreUObject",
@@ -24,14 +24,15 @@ public class UE20252Network : ModuleRules
             "GameplayTasks",
             "GameplayAbilities",
             "Niagara",
-            "UMG"
+            "UMG",
+            "Networking",
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-		
+
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
 
