@@ -116,4 +116,8 @@ public:
 	virtual void SetGenericTeamId(const FGenericTeamId& TeamID);
 	virtual FGenericTeamId GetGenericTeamId() const;
 	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const;
+
+	UFUNCTION(Server, Reliable)
+	virtual void SvrNormalAttack();
+	virtual void SvrNormalAttack_Implementation();
 };

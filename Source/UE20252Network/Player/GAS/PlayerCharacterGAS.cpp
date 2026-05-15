@@ -463,3 +463,7 @@ ETeamAttitude::Type APlayerCharacterGAS::GetTeamAttitudeTowards(const AActor& Ot
 	return GetGenericTeamId() == OtherTeamAgent->GetGenericTeamId() ?
 		ETeamAttitude::Friendly : ETeamAttitude::Hostile;
 }
+
+void APlayerCharacterGAS::SvrNormalAttack_Implementation()
+{
+}

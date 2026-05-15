@@ -33,8 +33,6 @@ void UGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle H
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	UE_LOG(UELOG, Warning, TEXT("Ability Attack"));
-
 	if (!mAbilityActive || !TriggerEventData || !TriggerEventData->Target)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
@@ -66,7 +64,7 @@ void UGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle H
 	// 타겟을 얻어온다.
 	AActor* TargetActor = HitData->HitResult.GetActor();
 
-	UAbilitySystemComponent* TargetASC = 
+	UAbilitySystemComponent* TargetASC =
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
 
 	if (!SourceASC || !TargetASC)

@@ -17,7 +17,8 @@ AShinbiGAS::AShinbiGAS()
 
 	// SkeletalMesh를 지정한다.
 	// Mesh의 참조를 얻어온다.
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh>	MeshAsset(TEXT("/Script/Engine.SkeletalMesh'/Game/ParagonShinbi/Characters/Heroes/Shinbi/Skins/Tier_1/Shinbi_Dynasty/Meshes/ShinbiDynasty.ShinbiDynasty'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT(
+		"/Script/Engine.SkeletalMesh'/Game/ParagonShinbi/Characters/Heroes/Shinbi/Skins/Tier_1/Shinbi_Dynasty/Meshes/ShinbiDynasty.ShinbiDynasty'"));
 
 	// GetMesh() : ACharacter 클래스에서 제공하는 SkeletalMeshComponent를 얻어오기 위한 함수이다.
 	// SkeletalMeshComponent는 ACharacter 클래스에서 private으로 되어 있기 때문에 GetMesh를
@@ -37,7 +38,8 @@ AShinbiGAS::AShinbiGAS()
 	// 애니메이션 블루프린트 클래스를 얻어온다.
 	// UClass를 얻어올때는 마지막에 반드시 _C 를 붙여주어야 한다.
 	/*static ConstructorHelpers::FClassFinder<UAnimInstance>	AnimClass(TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Shinbi/ABPShinbiTest.ABPShinbiTest_C'"));*/
-	static ConstructorHelpers::FClassFinder<UAnimInstance>	AnimClass(TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Shinbi/ABPShinbiTemplate1.ABPShinbiTemplate1_C'"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimClass(
+		TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Shinbi/ABPShinbiTemplate1.ABPShinbiTemplate1_C'"));
 
 	// SkeletalMeshComponent에 애니메이션 블루프린트 클래스를 지정하여 사용하게 한다.
 	if (AnimClass.Succeeded())
@@ -55,7 +57,7 @@ void AShinbiGAS::BeginPlay()
 	Super::BeginPlay();
 
 	mASC->GiveAbility(FGameplayAbilitySpec(UGameplayAbility_ShinbiSkill2::StaticClass(),
-		1, (int32)EAbilityInputID::Skill2, this));
+	                                       1, (int32)EAbilityInputID::Skill2, this));
 }
 
 // Called every frame
@@ -124,40 +126,38 @@ void AShinbiGAS::Skill3()
 		mEnableGhost = true;
 
 		GetWorldTimerManager().SetTimer(mGhostTimer, this, &AShinbiGAS::GhostSpawn,
-			0.1f, true);
+		                                0.1f, true);
 	}
 }
 
 void AShinbiGAS::NormalAttack()
 {
-	TArray<FHitResult>	HitArray;
+	TArray<FHitResult> HitArray;
 
-	FVector	StartLoc = GetActorLocation() + GetActorForwardVector() * 100.f;
-	FVector	EndLoc = StartLoc + GetActorForwardVector() * 200.f;
+	FVector StartLoc = GetActorLocation() + GetActorForwardVector() * 100.f;
+	FVector EndLoc = StartLoc + GetActorForwardVector() * 200.f;
 
-	FQuat	CapsuleRot = FQuat(FRotator(90.0, 0.0, 0.0));
+	FQuat CapsuleRot = FQuat(FRotator(90.0, 0.0, 0.0));
 
 	//CapsuleRot = FRotationMatrix::MakeFromX(GetActorForwardVector()).ToQuat();
 	//CapsuleRot = GetActorForwardVector().Rotation().Quaternion();
 	CapsuleRot = FQuat::FindBetweenNormals(FVector::UpVector,
-		GetActorForwardVector());
-
-	GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Green, CapsuleRot.Rotator().ToString());
+	                                       GetActorForwardVector());
 
 	// 캡슐을 만들어서 이 모양으로 충돌.
-	FCollisionQueryParams	param(NAME_None, false, this);
+	FCollisionQueryParams param(NAME_None, false, this);
 
 	// 충돌에서 제외할 액터를 등록할 수 있다.
 	//param.AddIgnoredActor(this);
 
 	bool Collision = GetWorld()->SweepMultiByChannel(HitArray, StartLoc, EndLoc,
-		CapsuleRot, ECollisionChannel::ECC_GameTraceChannel3,
-		FCollisionShape::MakeCapsule(35.f, 100.f), param);
+	                                                 CapsuleRot, ECollisionChannel::ECC_GameTraceChannel3,
+	                                                 FCollisionShape::MakeCapsule(35.f, 100.f), param);
 
 	// 선충돌 할때 사용.
 	//GetWorld()->LineTraceMultiByChannel
 
-	FColor	DebugColor = FColor::Green;
+	FColor DebugColor = FColor::Green;
 
 	// 충돌 물체가 있을 경우
 	if (Collision)
@@ -172,7 +172,7 @@ void AShinbiGAS::NormalAttack()
 				continue;
 
 			// 공격 어빌리티를 발동시킨다.
-			FGameplayEventData	EventData;
+			FGameplayEventData EventData;
 
 			EventData.Target = HitActor;
 			EventData.Instigator = this;
@@ -185,7 +185,7 @@ void AShinbiGAS::NormalAttack()
 			EventData.TargetData.Add(TargetData);
 
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this,
-				EventData.EventTag, EventData);
+			                                                         EventData.EventTag, EventData);
 
 			//mASC->TryActivateAbilitiesByTag()
 			//mASC->TryActivateAbilityByClass()
@@ -218,7 +218,7 @@ void AShinbiGAS::NormalAttack()
 #if WITH_EDITOR
 
 	DrawDebugCapsule(GetWorld(), (StartLoc + EndLoc) * 0.5f, 100.f, 35.f, CapsuleRot,
-		DebugColor, false, 1.f);
+	                 DebugColor, false, 1.f);
 
 #endif
 }
@@ -227,42 +227,42 @@ void AShinbiGAS::Skill1Casting()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Casting"));
 
-	TObjectPtr<APlayerController>	PlayerCtrl = GetController<APlayerController>();
+	TObjectPtr<APlayerController> PlayerCtrl = GetController<APlayerController>();
 
 	// Picking
-	FHitResult	Hit;
+	FHitResult Hit;
 	bool Pick = PlayerCtrl->GetHitResultUnderCursor(
 		ECollisionChannel::ECC_GameTraceChannel5, true, Hit);
 
-	FVector	DecalLoc;
+	FVector DecalLoc;
 
 	if (Pick)
 		DecalLoc = Hit.ImpactPoint;
 
 	// 바닥의 마법진을 생성한다.
-	FActorSpawnParameters	param;
+	FActorSpawnParameters param;
 	param.SpawnCollisionHandlingOverride =
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	TObjectPtr<ADecalBase> DecalActor = GetWorld()->SpawnActor<ADecalBase>(DecalLoc,
-		FRotator(-90.0, 0.0, 0.0), param);
+	                                                                       FRotator(-90.0, 0.0, 0.0), param);
 
-	DecalActor->SetDecalMaterial(TEXT("/Script/Engine.Material'/Game/Player/Shinbi/Material/MTShibiMagicCircle.MTShibiMagicCircle'"));
+	DecalActor->SetDecalMaterial(
+		TEXT("/Script/Engine.Material'/Game/Player/Shinbi/Material/MTShibiMagicCircle.MTShibiMagicCircle'"));
 
 	mMagicCircleActor = DecalActor;
-
 }
 
 void AShinbiGAS::GhostSpawn()
 {
 	++mGhostCount;
 
-	FVector	Location = GetActorLocation();
-	
+	FVector Location = GetActorLocation();
+
 	Location.Z -= GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 
 	AGhostActor* Ghost = GetWorld()->SpawnActor<AGhostActor>(Location,
-		GetActorRotation());
+	                                                         GetActorRotation());
 
 	Ghost->CopyMesh(GetMesh());
 
@@ -276,12 +276,68 @@ void AShinbiGAS::GhostSpawn()
 
 void AShinbiGAS::Attack_Server_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Attack Server"));
 	Attack_Execution();
 }
 
 void AShinbiGAS::Attack_Execution_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, TEXT("Attack Execution"));
 	mAnimInst->PlayAttack();
+}
+
+void AShinbiGAS::SvrNormalAttack_Implementation()
+{
+	TArray<FHitResult> HitResults;
+
+	FVector StartLoc = GetActorLocation() + GetActorForwardVector() * 100.f;
+	FVector EndLoc = StartLoc + GetActorForwardVector() * 200.f;
+
+	FQuat CapsuleRot = FQuat(FRotator(90.0, 0.0, 0.0));
+
+	//CapsuleRot = FRotationMatrix::MakeFromX(GetActorForwardVector()).ToQuat();
+	//CapsuleRot = GetActorForwardVector().Rotation().Quaternion();
+	CapsuleRot = FQuat::FindBetweenNormals(FVector::UpVector, GetActorForwardVector());
+
+	// 캡슐을 만들어서 이 모양으로 충돌.
+	FCollisionQueryParams Params(NAME_None, false, this);
+
+	// 충돌에서 제외할 액터를 등록할 수 있다.
+	//param.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->SweepMultiByChannel(HitResults, StartLoc, EndLoc, CapsuleRot,
+	                                            ECollisionChannel::ECC_GameTraceChannel3,
+	                                            FCollisionShape::MakeCapsule(35.f, 100.f), Params);
+
+	// 선충돌 할때 사용.
+	//GetWorld()->LineTraceMultiByChannel
+
+	FColor DebugColor = FColor::Green;
+
+	// 충돌 물체가 있을 경우
+	if (bHit)
+	{
+		DebugColor = FColor::Red;
+
+		for (const auto& Hit : HitResults)
+		{
+			AActor* HitActor = Hit.GetActor();
+
+			if (!HitActor)
+			{
+				continue;
+			}
+
+			// 공격 어빌리티를 발동시킨다.
+			FGameplayEventData EventData;
+			EventData.Target = HitActor;
+			EventData.Instigator = this;
+
+			EventData.EventTag = FGameplayTag::RequestGameplayTag(TEXT("Ability.Attack"));
+
+			auto* TargetData = new FGameplayAbilityTargetData_SingleTargetHit(Hit);
+
+			EventData.TargetData.Add(TargetData);
+
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, EventData.EventTag, EventData);
+		}
+	}
 }

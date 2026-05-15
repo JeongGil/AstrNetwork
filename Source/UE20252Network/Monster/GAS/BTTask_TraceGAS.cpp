@@ -96,11 +96,8 @@ void UBTTask_TraceGAS::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 
 	if (PathStatus == EPathFollowingStatus::Idle)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Path Finished"));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Trace"));
 
 	// 공격거리 안에 들어갔는지 판단한다.
 	// 두 객체의 캡슐을 얻어와서 높이를 맞추고 거리를 구한다.
@@ -127,7 +124,6 @@ void UBTTask_TraceGAS::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 
 	if (Distance <= Attr->GetAttackDistance())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Attack Dist Finished"));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 	}
 }

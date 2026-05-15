@@ -17,7 +17,8 @@ AGhostActor::AGhostActor()
 
 	mMesh->SetRelativeRotation(FRotator(0.0, -90.0, 0.0));
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface>	SourceMtrl(TEXT("/Script/Engine.Material'/Game/Materials/MT_Ghost.MT_Ghost'"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> SourceMtrl(
+		TEXT("/Script/Engine.Material'/Game/Materials/MT_Ghost.MT_Ghost'"));
 
 	if (SourceMtrl.Succeeded())
 		mSourceMaterial = SourceMtrl.Object;
@@ -27,7 +28,6 @@ AGhostActor::AGhostActor()
 void AGhostActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -43,7 +43,7 @@ void AGhostActor::Tick(float DeltaTime)
 		mOpacity = 0.f;
 	}
 
-	for (auto& Mtrl : mMaterials)
+	for (const auto& Mtrl : mMaterials)
 	{
 		Mtrl->SetScalarParameterValue(TEXT("Opacity"), mOpacity);
 	}
@@ -52,17 +52,17 @@ void AGhostActor::Tick(float DeltaTime)
 void AGhostActor::CopyMesh(USkeletalMeshComponent* Mesh)
 {
 	// SkeletalMesh를 지정한다.
-	mMesh->SetSkeletalMesh(Mesh->SkeletalMesh);
+	mMesh->SetSkinnedAsset(Mesh->GetSkinnedAsset());
+	// mMesh->SetSkeletalMesh(Mesh->SkeletalMesh);
 
 	// Pose를 복사한다.
 	mMesh->CopyPoseFromSkeletalComponent(Mesh);
 
-	int32	MaterialCount = mMesh->GetNumMaterials();
+	int32 MaterialCount = mMesh->GetNumMaterials();
 
 	for (int32 i = 0; i < MaterialCount; ++i)
 	{
-		UMaterialInstanceDynamic* Mtrl = mMesh->CreateDynamicMaterialInstance(i,
-			mSourceMaterial);
+		UMaterialInstanceDynamic* Mtrl = mMesh->CreateDynamicMaterialInstance(i, mSourceMaterial);
 
 		Mtrl->BlendMode = EBlendMode::BLEND_TranslucentGreyTransmittance;
 

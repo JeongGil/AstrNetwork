@@ -6,7 +6,7 @@
 #include "ShinbiGAS.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class UE20252NETWORK_API AShinbiGAS : public APlayerCharacterGAS
@@ -51,4 +51,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void Attack_Execution();
 	void Attack_Execution_Implementation();
+
+public:
+	virtual void SvrNormalAttack_Implementation() override;
 };
