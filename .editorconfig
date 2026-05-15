@@ -1,0 +1,32 @@
+﻿# .editorconfig for Unreal Engine Projects
+# https://docs.unrealengine.com/5.7/en-US/epic-cplusplus-coding-standard-for-unreal-engine/
+
+root = true
+
+[*]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+end_of_line = crlf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{cpp,h,hpp,inl,cs,usf,ush}]
+# Unreal Engine Coding Standard uses UTF-8 with BOM for C++ files to avoid compiler issues.
+charset = utf-8-bom
+
+# Bracing Style (Allman)
+cpp_indent_braces = false
+cpp_new_line_before_open_brace = all
+cpp_new_line_before_else = true
+cpp_new_line_before_catch = true
+cpp_new_line_before_finally = true
+cpp_indent_access_specifiers = false
+
+[*.{xml,json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false

@@ -1,0 +1,31 @@
+﻿###############################################################################
+# Text
+###############################################################################
+* text=auto
+
+*.cpp text
+*.h   text
+*.cs  text
+*.ini text
+*.uproject text
+*.uplugin text
+*.txt text
+*.csv text
+*.json text
+*.usf text
+*.ush text
+
+###############################################################################
+# Unreal Assets
+###############################################################################
+*.uasset filter=lfs diff=lfs merge=binary -text lockable
+*.umap   filter=lfs diff=lfs merge=binary -text lockable
+
+###############################################################################
+# LFS Media
+###############################################################################
+*.fbx filter=lfs diff=lfs merge=binary -text
+*.png filter=lfs diff=lfs merge=binary -text
+*.jpg filter=lfs diff=lfs merge=binary -text
+*.wav filter=lfs diff=lfs merge=binary -text
+*.mp4 filter=lfs diff=lfs merge=binary -text
