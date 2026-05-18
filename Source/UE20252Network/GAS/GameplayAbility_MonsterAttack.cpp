@@ -101,7 +101,5 @@ void UGameplayAbility_MonsterAttack::ActivateAbility(const FGameplayAbilitySpecH
 	// GameplayEffect를 실행시킨다. 대상 Target들에게 모두 적용시킨다.
 	ApplyGameplayEffectSpecToTarget(Handle, ActorInfo, ActivationInfo, DamageSpec, TargetData);
 
-	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Monster Attack"));
-
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

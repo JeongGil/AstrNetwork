@@ -77,8 +77,6 @@ void AMonsterNormalGAS_Warrior::NormalAttack()
 			EventData.TargetData.Add(TargetData);
 
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, EventData.EventTag, EventData);
-
-			GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Monster NormalAttack"));
 		}
 	}
 }

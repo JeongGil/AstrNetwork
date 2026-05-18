@@ -79,7 +79,7 @@ void UInventoryWidget::InitInventory(class UInventoryComponent* Inventory)
 
 	for (int32 i = 0; i < MaxCount; ++i)
 	{
-		FString SlotName = TEXT("UB_GameSlot_") + FString::FromInt(i + 1);
+		FString SlotName = TEXT("WB_GameSlot_") + FString::FromInt(i + 1);
 
 		UGameSlotWidget* InvenSlot = Cast<UGameSlotWidget>(GetWidgetFromName(*SlotName));
 

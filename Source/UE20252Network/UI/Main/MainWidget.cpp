@@ -13,7 +13,7 @@ void UMainWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	mPlayerHUD = Cast<UPlayerHUDWidget>(GetWidgetFromName(TEXT("UB_PlayerHUD")));
+	mPlayerHUD = Cast<UPlayerHUDWidget>(GetWidgetFromName(TEXT("WB_PlayerHUD")));
 
 	if (IsValid(mPlayerHUD))
 	{

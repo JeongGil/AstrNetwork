@@ -2,30 +2,28 @@
 
 #pragma once
 
-#include "../GameInfo.h"
 #include "GameFramework/PlayerController.h"
 #include "MainPlayerController.generated.h"
 
+
+class UMainWidget;
 
 UCLASS()
 class UE20252NETWORK_API AMainPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
 public:
 	AMainPlayerController();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UMainWidget>	mMainWidgetClass;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UMainWidget>	mMainWidget;
+	TObjectPtr<UMainWidget>	mMainWidget;
 
 	FString			mPlayerName;
 
 public:
-	class UMainWidget* GetMainWidget()	const
+	UMainWidget* GetMainWidget()	const
 	{
 		return mMainWidget;
 	}

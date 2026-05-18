@@ -10,12 +10,6 @@ AMainPlayerController::AMainPlayerController()
 
 	// 마우스 커서를 보이게 한다.
 	bShowMouseCursor = true;
-
-	/*static ConstructorHelpers::FClassFinder<UMainWidget>	WidgetClass(
-		TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Main/UB_Main.UB_Main_C'"));
-
-	if (WidgetClass.Succeeded())
-		mMainWidgetClass = WidgetClass.Class;*/
 }
 
 void AMainPlayerController::BeginPlay()
@@ -26,17 +20,23 @@ void AMainPlayerController::BeginPlay()
 	// FInputModeGameOnly
 	// FInputModeGameAndUI
 	// FInputModeUIOnly
-	FInputModeGameAndUI	InputMode;
+	FInputModeGameAndUI InputMode;
 	SetInputMode(InputMode);
 
-	/*mMainWidget = CreateWidget<UMainWidget>(this, mMainWidgetClass);
-
-	if (IsValid(mMainWidget))
+	if (IsLocalPlayerController())
 	{
-		mMainWidget->AddToViewport();
-	}*/
+		const TSubclassOf<UMainWidget> MainWidgetClass = LoadClass<UMainWidget>(
+			this, TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Main/WB_Main.WB_Main_C'"));
 
-	//CurrentMouseCursor = EMouseCursor::TextEditBeam;
+		mMainWidget = CreateWidget<UMainWidget>(this, MainWidgetClass);
+
+		if (IsValid(mMainWidget))
+		{
+			mMainWidget->AddToViewport();
+		}
+	}
+
+	// CurrentMouseCursor = EMouseCursor::TextEditBeam;
 }
 
 void AMainPlayerController::OnPossess(APawn* aPawn)
@@ -53,12 +53,12 @@ void AMainPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FHitResult	Hit;
+	FHitResult Hit;
 	bool Pick = GetHitResultUnderCursor(ECollisionChannel::ECC_GameTraceChannel5, true,
-		Hit);
+	                                    Hit);
 
-	if (Pick)
-	{
-		/*GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, Hit.ImpactPoint.ToString());*/
-	}
+	// if (Pick)
+	// {
+	// 	/*GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, Hit.ImpactPoint.ToString());*/
+	// }
 }
