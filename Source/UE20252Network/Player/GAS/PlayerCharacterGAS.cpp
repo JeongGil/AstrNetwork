@@ -78,7 +78,7 @@ APlayerCharacterGAS::APlayerCharacterGAS()
 	SetReplicates(true);
 	SetReplicateMovement(true);
 
-	//mInventoryCom = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+	mInventoryCom = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 
 	/*static ConstructorHelpers::FClassFinder<UCameraShakeBase>	DefaultShake(TEXT("/Script/Engine.Blueprint'/Game/Blueprints/BPLGShake.BPLGShake_C'"));
 
@@ -90,8 +90,6 @@ APlayerCharacterGAS::APlayerCharacterGAS()
 void APlayerCharacterGAS::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UE_LOG(UELOG, Warning, TEXT("PlayerCharacterGAS BeginPlay"));
 
 	// 플레이어 정보를 설정한다.
 	//GetPlayerState<AMainPlayerState>()->LoadPlayerInfo(mPlayerName);

@@ -3,37 +3,45 @@
 
 #include "InventoryComponent.h"
 #include "../Etc/ItemObject.h"
-#include "../UI/Main/InventoryWidget.h"
-#include "../GameMode/UIGameInstanceSubsystem.h"
 #include "../GameMode/AssetGameInstanceSubsystem.h"
+#include "../GameMode/UIGameInstanceSubsystem.h"
+#include "../UI/Main/InventoryWidget.h"
+#include "Engine/ActorChannel.h"
 #include "GAS/PlayerCharacterGAS.h"
 #include "GAS/Effect/GameplayEffect_HPPotion.h"
 #include "GAS/Effect/GameplayEffect_ItemAttack.h"
+#include "Net/UnrealNetwork.h"
 
 UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
 	bWantsInitializeComponent = true;
+
+	SetIsReplicated(true);
 }
 
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!GetOwner() || !GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
 	UGameInstance* GameInst = GetWorld()->GetGameInstance();
 
 	// 테스트에 사용할 아이템 생성.
-	UAssetGameInstanceSubsystem* AssetSubSystem =
-		GameInst->GetSubsystem<UAssetGameInstanceSubsystem>();
+	auto* AssetSubSystem = GameInst->GetSubsystem<UAssetGameInstanceSubsystem>();
 
 	if (AssetSubSystem->GetItemInfoLoadComplete())
+	{
 		ItemInfoLoadComplete();
-
+	}
 	else
 	{
-		AssetSubSystem->mItemInfoLoadDelegate.AddUObject(this,
-			&UInventoryComponent::ItemInfoLoadComplete);
+		AssetSubSystem->mItemInfoLoadDelegate.AddUObject(this, &UInventoryComponent::ItemInfoLoadComplete);
 	}
 }
 
@@ -44,20 +52,43 @@ void UInventoryComponent::InitializeComponent()
 	mItemList.Init(nullptr, mInventoryMaxCount);
 }
 
-void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+                                        FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+bool UInventoryComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool Result = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+	for (auto& Item : mItemList)
+	{
+		Result |= Channel->ReplicateSubobject(Item, *Bunch, *RepFlags);
+	}
+
+	return Result;
+}
+
+void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UInventoryComponent, mItemList);
+	DOREPLIFETIME(UInventoryComponent, mItemCount);
 }
 
 void UInventoryComponent::AddItem(const FItemTableInfo* Info)
 {
 	if (mItemCount == mInventoryMaxCount)
+	{
 		return;
+	}
 
 	// 이 아이템이 수량추가가 가능한 아이템인지 체크한다.
 	if (Info->WidgetLayeredType == EItemWidgetLayerType::Layered)
 	{
-		bool	Layered = false;
+		bool Layered = false;
 
 		for (int32 i = 0; i < mInventoryMaxCount; ++i)
 		{
@@ -70,7 +101,9 @@ void UInventoryComponent::AddItem(const FItemTableInfo* Info)
 
 					// 위젯에 수량 변화를 알려준다.
 					if (mItemCountChange.IsBound())
+					{
 						mItemCountChange.Broadcast(i, mItemList[i]->GetItemCount());
+					}
 
 					break;
 				}
@@ -89,22 +122,27 @@ void UInventoryComponent::AddItem(const FItemTableInfo* Info)
 				{
 					mItemList[i] = Item;
 
+					SetItemCli(Item, i);
+
+					GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("AddItem"));
+
 					++mItemCount;
 
 					// 델리게이트를 만들어서 인벤토리에 변화가 생긴다면 호출할 함수를 등록하여
 					// 여기에서 그 함수들을 호출해준다.
 					if (mItemChange.IsBound())
+					{
 						mItemChange.Broadcast(Item, i);
+					}
 
 					break;
 				}
 			}
 		}
 	}
-
 	else
 	{
-		UItemObject* Item = NewObject<UItemObject>();
+		UItemObject* Item = NewObject<UItemObject>(GetOwner());
 
 		Item->SetItemInfo(Info);
 
@@ -114,12 +152,16 @@ void UInventoryComponent::AddItem(const FItemTableInfo* Info)
 			{
 				mItemList[i] = Item;
 
+				SetItemCli(Item, i);
+
 				++mItemCount;
 
 				// 델리게이트를 만들어서 인벤토리에 변화가 생긴다면 호출할 함수를 등록하여
 				// 여기에서 그 함수들을 호출해준다.
 				if (mItemChange.IsBound())
+				{
 					mItemChange.Broadcast(Item, i);
+				}
 
 				break;
 			}
@@ -130,18 +172,21 @@ void UInventoryComponent::AddItem(const FItemTableInfo* Info)
 void UInventoryComponent::ChangeGold(int32 Gold)
 {
 	if (mGoldChange.IsBound())
+	{
 		mGoldChange.Broadcast(Gold);
+	}
 }
 
 void UInventoryComponent::ItemInfoLoadComplete()
 {
-	UGameInstance* GameInst = GetWorld()->GetGameInstance();
+	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Green, TEXT("ItemInfoLoadComplete"));
+
+	const UGameInstance* GameInst = GetWorld()->GetGameInstance();
 
 	// 테스트에 사용할 아이템 생성.
-	UAssetGameInstanceSubsystem* AssetSubSystem =
-		GameInst->GetSubsystem<UAssetGameInstanceSubsystem>();
+	const auto* AssetSubSystem = GameInst->GetSubsystem<UAssetGameInstanceSubsystem>();
 
-	TArray<FName>	ItemNames;
+	TArray<FName> ItemNames;
 	ItemNames.Add(TEXT("sword_001"));
 	ItemNames.Add(TEXT("sword_002"));
 	ItemNames.Add(TEXT("bow_001"));
@@ -154,28 +199,33 @@ void UInventoryComponent::ItemInfoLoadComplete()
 		const FItemTableInfo* Info = AssetSubSystem->FindItemInfo(ItemNames[i]);
 
 		if (!Info)
+		{
 			continue;
+		}
 
 		AddItem(Info);
 	}
 
-	UUIGameInstanceSubsystem* UISubSystem =
-		GameInst->GetSubsystem<UUIGameInstanceSubsystem>();
+	auto* UISubSystem = GameInst->GetSubsystem<UUIGameInstanceSubsystem>();
 
-	UInventoryWidget* InventoryWidget = UISubSystem->FindWidget<UInventoryWidget>(
-		TEXT("Inventory"));
+	auto* InventoryWidget = UISubSystem->FindWidget<UInventoryWidget>(TEXT("Inventory"));
 
 	if (IsValid(InventoryWidget))
+	{
 		InventoryWidget->InitInventory(this);
+	}
 }
 
 void UInventoryComponent::UseItem(int32 Index)
 {
 	if (Index < 0 || Index >= mInventoryMaxCount)
+	{
 		return;
-
+	}
 	else if (!IsValid(mItemList[Index]))
+	{
 		return;
+	}
 
 	switch (mItemList[Index]->GetItemType())
 	{
@@ -224,18 +274,20 @@ void UInventoryComponent::UsePotion(int32 Index)
 	APlayerCharacterGAS* OwnerCharacter = Cast<APlayerCharacterGAS>(GetOwner());
 
 	if (!OwnerCharacter)
+	{
 		return;
+	}
 
 	UAbilitySystemComponent* ASC = OwnerCharacter->GetAbilitySystemComponent();
-
 	if (!ASC)
+	{
 		return;
+	}
 
 	const TArray<FItemOption>& Options = mItemList[Index]->GetItemOptions();
-
 	for (const FItemOption& Option : Options)
 	{
-		bool	Loop = true;
+		bool Loop = true;
 
 		switch (Option.Type)
 		{
@@ -248,39 +300,44 @@ void UInventoryComponent::UsePotion(int32 Index)
 		case EItemOptionType::MPMax:
 			break;
 		case EItemOptionType::HPRecoveryPoint:
-		{
-			// 체력 회복 GameplayEffect 동작.
-			FGameplayEffectContextHandle	ContextHandle = ASC->MakeEffectContext();
-
-			ContextHandle.AddSourceObject(OwnerCharacter);
-
-			FGameplayEffectSpecHandle	SpecHandle =
-				ASC->MakeOutgoingSpec(UGameplayEffect_HPPotion::StaticClass(), 1.f,
-					ContextHandle);
-
-			if (!SpecHandle.IsValid())
-				continue;
-
-			SpecHandle.Data->SetSetByCallerMagnitude(
-				FGameplayTag::RequestGameplayTag(TEXT("Effect.Item.HPPotion")),
-					Option.Option);
-			
-			ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
-
-			mItemList[Index]->AddCount(-1);
-
-			if (mItemCountChange.IsBound())
-				mItemCountChange.Broadcast(Index, mItemList[Index]->GetItemCount());
-
-			if (mItemList[Index]->GetItemCount() == 0)
 			{
-				mItemList[Index] = nullptr;
-				Loop = false;
+				// 체력 회복 GameplayEffect 동작.
+				FGameplayEffectContextHandle ContextHandle = ASC->MakeEffectContext();
 
-				if (mItemChange.IsBound())
-					mItemChange.Broadcast(nullptr, Index);
+				ContextHandle.AddSourceObject(OwnerCharacter);
+
+				FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(
+					UGameplayEffect_HPPotion::StaticClass(), 1.f, ContextHandle);
+
+				if (!SpecHandle.IsValid())
+				{
+					continue;
+				}
+
+				SpecHandle.Data->SetSetByCallerMagnitude(
+					FGameplayTag::RequestGameplayTag(TEXT("Effect.Item.HPPotion")),
+					Option.Option);
+
+				ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+
+				mItemList[Index]->AddCount(-1);
+
+				if (mItemCountChange.IsBound())
+				{
+					mItemCountChange.Broadcast(Index, mItemList[Index]->GetItemCount());
+				}
+
+				if (mItemList[Index]->GetItemCount() == 0)
+				{
+					mItemList[Index] = nullptr;
+					Loop = false;
+
+					if (mItemChange.IsBound())
+					{
+						mItemChange.Broadcast(nullptr, Index);
+					}
+				}
 			}
-		}
 			break;
 		case EItemOptionType::HPRecoveryRate:
 			break;
@@ -301,7 +358,9 @@ void UInventoryComponent::UsePotion(int32 Index)
 		}
 
 		if (!Loop)
+		{
 			break;
+		}
 	}
 }
 
@@ -309,12 +368,15 @@ void UInventoryComponent::UseWeapon(int32 Index)
 {
 	// 기존에 장착하고 있던 아이템을 다시 장착하려고 하는 경우
 	if (mEquipWeaponIndex == Index)
+	{
 		return;
+	}
 
-	APlayerCharacterGAS* OwnerCharacter = Cast<APlayerCharacterGAS>(GetOwner());
-
+	auto* OwnerCharacter = Cast<APlayerCharacterGAS>(GetOwner());
 	if (!OwnerCharacter)
+	{
 		return;
+	}
 
 	// 기존에 장착하고 있던 무기가 있을 경우
 	if (mEquipWeaponIndex != -1)
@@ -323,7 +385,9 @@ void UInventoryComponent::UseWeapon(int32 Index)
 
 		// 기존에 있던 장착 표시를 해제한다.
 		if (mItemEquipChange.IsBound())
+		{
 			mItemEquipChange.Broadcast(mEquipWeaponIndex, false);
+		}
 	}
 
 	ApplyItemAttack(Index);
@@ -332,7 +396,9 @@ void UInventoryComponent::UseWeapon(int32 Index)
 	OwnerCharacter->EquipWeapon(mItemList[Index]->GetItemMesh());
 
 	if (mItemEquipChange.IsBound())
+	{
 		mItemEquipChange.Broadcast(Index, true);
+	}
 
 	mEquipWeaponIndex = Index;
 }
@@ -346,11 +412,12 @@ float UInventoryComponent::GetItemAttack(int32 Index)
 	float Attack = 0.f;
 
 	const TArray<FItemOption>& Options = mItemList[Index]->GetItemOptions();
-
-	for (const FItemOption& Option : Options)
+	for (const auto& [Type, Option] : Options)
 	{
-		if (Option.Type == EItemOptionType::Attack)
-			Attack += Option.Option;
+		if (Type == EItemOptionType::Attack)
+		{
+			Attack += Option;
+		}
 	}
 
 	return Attack;
@@ -358,46 +425,50 @@ float UInventoryComponent::GetItemAttack(int32 Index)
 
 void UInventoryComponent::ApplyItemAttack(int32 Index)
 {
-	APlayerCharacterGAS* OwnerCharacter = Cast<APlayerCharacterGAS>(GetOwner());
-
+	const auto* OwnerCharacter = Cast<APlayerCharacterGAS>(GetOwner());
 	if (!OwnerCharacter)
+	{
 		return;
+	}
 
 	UAbilitySystemComponent* ASC = OwnerCharacter->GetAbilitySystemComponent();
-
 	if (!ASC)
+	{
 		return;
+	}
 
 	// 체력 회복 GameplayEffect 동작.
-	FGameplayEffectContextHandle	ContextHandle = ASC->MakeEffectContext();
+	FGameplayEffectContextHandle ContextHandle = ASC->MakeEffectContext();
 
 	ContextHandle.AddSourceObject(OwnerCharacter);
 
-	FGameplayEffectSpecHandle	SpecHandle =
-		ASC->MakeOutgoingSpec(UGameplayEffect_ItemAttack::StaticClass(), 1.f,
-			ContextHandle);
+	FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(UGameplayEffect_ItemAttack::StaticClass(), 1.f,
+	                                                             ContextHandle);
 
 	if (!SpecHandle.IsValid())
+	{
 		return;
+	}
 
-	SpecHandle.Data->SetSetByCallerMagnitude(
-		FGameplayTag::RequestGameplayTag(TEXT("Effect.Item.Weapon")),
-		GetItemAttack(Index));
+	SpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Effect.Item.Weapon")),
+	                                         GetItemAttack(Index));
 
 	mWeaponHandle = ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
 }
 
 void UInventoryComponent::RemoveItemAttack(int32 Index)
 {
-	APlayerCharacterGAS* OwnerCharacter = Cast<APlayerCharacterGAS>(GetOwner());
-
+	const auto* OwnerCharacter = Cast<APlayerCharacterGAS>(GetOwner());
 	if (!OwnerCharacter)
+	{
 		return;
+	}
 
 	UAbilitySystemComponent* ASC = OwnerCharacter->GetAbilitySystemComponent();
-
 	if (!ASC)
+	{
 		return;
+	}
 
 	// Infinite로 했을 경우
 	ASC->RemoveActiveGameplayEffect(mWeaponHandle);
@@ -405,13 +476,13 @@ void UInventoryComponent::RemoveItemAttack(int32 Index)
 	return;
 
 	// 체력 회복 GameplayEffect 동작.
-	FGameplayEffectContextHandle	ContextHandle = ASC->MakeEffectContext();
+	FGameplayEffectContextHandle ContextHandle = ASC->MakeEffectContext();
 
 	ContextHandle.AddSourceObject(OwnerCharacter);
 
-	FGameplayEffectSpecHandle	SpecHandle =
+	FGameplayEffectSpecHandle SpecHandle =
 		ASC->MakeOutgoingSpec(UGameplayEffect_ItemAttack::StaticClass(), 1.f,
-			ContextHandle);
+		                      ContextHandle);
 
 	if (!SpecHandle.IsValid())
 		return;
@@ -421,4 +492,16 @@ void UInventoryComponent::RemoveItemAttack(int32 Index)
 		-GetItemAttack(Index));
 
 	ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+}
+
+void UInventoryComponent::SetItemCli_Implementation(UItemObject* Item, int32 Index)
+{
+	mItemList[Index] = Item;
+
+	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("AddItem"));
+
+	if (mItemChange.IsBound())
+	{
+		mItemChange.Broadcast(Item, Index);
+	}
 }

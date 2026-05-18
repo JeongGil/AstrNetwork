@@ -19,116 +19,116 @@ void AMainPlayerState::BeginPlay()
 
 	UE_LOG(UELOG, Warning, TEXT("PlayerState BeginPlay"));
 
-	
+
 }
 
 void AMainPlayerState::LoadPlayerInfo(const FName& PlayerName)
 {
 	mTableRowName = PlayerName;
 
-	//UAssetManager& AssetMgr = UAssetManager::Get();
+	UAssetManager& AssetMgr = UAssetManager::Get();
 
-	//FPrimaryAssetId	PlayerAssetId(TEXT("PlayerInfoTableAsset"), TEXT("PDA_PlayerInfo"));
+	FPrimaryAssetId	PlayerAssetId(TEXT("PlayerInfoTableAsset"), TEXT("PDA_PlayerInfo"));
 
-	//// 비동기 로딩을 진행해준다. 로딩 명령을 내려놓고 로딩이 끝나면 지정된 함수가
-	//// 호출된다.
-	//AssetMgr.LoadPrimaryAsset(PlayerAssetId, TArray<FName>{},
-	//	FStreamableDelegate::CreateUObject(this, &AMainPlayerState::PlayerInfoLoadComplete, PlayerAssetId));
+	// 비동기 로딩을 진행해준다. 로딩 명령을 내려놓고 로딩이 끝나면 지정된 함수가
+	// 호출된다.
+	AssetMgr.LoadPrimaryAsset(PlayerAssetId, TArray<FName>{},
+		FStreamableDelegate::CreateUObject(this, &AMainPlayerState::PlayerInfoLoadComplete, PlayerAssetId));
 }
 
 void AMainPlayerState::PlayerInfoLoadComplete(FPrimaryAssetId LoadId)
 {
-	//UAssetManager& AssetMgr = UAssetManager::Get();
+	UAssetManager& AssetMgr = UAssetManager::Get();
 
-	//// 로딩된 오브젝트를 얻어온다.
-	//TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
+	// 로딩된 오브젝트를 얻어온다.
+	TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
 
-	//TObjectPtr<UPlayerInfoTableAsset>	DataAsset =
-	//	Cast<UPlayerInfoTableAsset>(LoadObject);
+	TObjectPtr<UPlayerInfoTableAsset>	DataAsset =
+		Cast<UPlayerInfoTableAsset>(LoadObject);
 
-	//if (!DataAsset)
-	//{
-	//	UE_LOG(UELOG, Warning, TEXT("PlayerInfo Load Failed"));
-	//	return;
-	//}
+	if (!DataAsset)
+	{
+		UE_LOG(UELOG, Warning, TEXT("PlayerInfo Load Failed"));
+		return;
+	}
 
-	//mPlayerInfoTable = DataAsset->mTable.LoadSynchronous();
+	mPlayerInfoTable = DataAsset->mTable.LoadSynchronous();
 
-	//if (!IsValid(mPlayerInfoTable))
-	//{
-	//	UE_LOG(UELOG, Warning, TEXT("PlayerInfo DataTable Load Failed"));
-	//	return;
-	//}
+	if (!IsValid(mPlayerInfoTable))
+	{
+		UE_LOG(UELOG, Warning, TEXT("PlayerInfo DataTable Load Failed"));
+		return;
+	}
 
-	//UE_LOG(UELOG, Warning, TEXT("PlayerInfo Load Complete"));
+	UE_LOG(UELOG, Warning, TEXT("PlayerInfo Load Complete"));
 
-	//const FPlayerInfo* Info = mPlayerInfoTable->FindRow<FPlayerInfo>(
-	//	mTableRowName, TEXT("PlayerInfo"));
+	const FPlayerInfo* Info = mPlayerInfoTable->FindRow<FPlayerInfo>(
+		mTableRowName, TEXT("PlayerInfo"));
 
-	//mName = Info->PlayerName;
+	mName = Info->PlayerName;
 
-	//AMainPlayerController* PlayerCtrl = Cast<AMainPlayerController>(GetOwner());
+	AMainPlayerController* PlayerCtrl = Cast<AMainPlayerController>(GetOwner());
 
-	//if (IsValid(PlayerCtrl))
-	//{
-	//	UMainWidget* MainWidget = PlayerCtrl->GetMainWidget();
+	if (IsValid(PlayerCtrl))
+	{
+		UMainWidget* MainWidget = PlayerCtrl->GetMainWidget();
 
-	//	if (IsValid(MainWidget))
-	//		MainWidget->GetPlayerHUDWidget()->SetPlayerName(mName);
-	//}
+		if (IsValid(MainWidget))
+			MainWidget->GetPlayerHUDWidget()->SetPlayerName(mName);
+	}
 
-	//mJob = Info->Job;
-	//mLevel = Info->Level;
-	//mExp = Info->Exp;
-	//mAttack = Info->Attack;
-	//mDefense = Info->Defense;
-	//mHPMax = Info->HPMax;
-	//mHP = mHPMax;
-	//mMPMax = Info->MPMax;
-	//mMP = mMPMax;
+	mJob = Info->Job;
+	mLevel = Info->Level;
+	mExp = Info->Exp;
+	mAttack = Info->Attack;
+	mDefense = Info->Defense;
+	mHPMax = Info->HPMax;
+	mHP = mHPMax;
+	mMPMax = Info->MPMax;
+	mMP = mMPMax;
 
 
-	//mWalkSpeed = Info->WalkSpeed;
-	//mRunSpeed = Info->RunSpeed;
-	//mAttackDistance = Info->AttackDistance;
-	//mGold = Info->Gold;
+	mWalkSpeed = Info->WalkSpeed;
+	mRunSpeed = Info->RunSpeed;
+	mAttackDistance = Info->AttackDistance;
+	mGold = Info->Gold;
 
-	//mAbilityMap = Info->AbilityMap;
+	mAbilityMap = Info->AbilityMap;
 
-	//if (PlayerCtrl)
-	//{
-	//	ACharacter* Character = PlayerCtrl->GetPawn<ACharacter>();
+	if (PlayerCtrl)
+	{
+		ACharacter* Character = PlayerCtrl->GetPawn<ACharacter>();
 
-	//	Character->GetCharacterMovement()->MaxWalkSpeed = mRunSpeed;
+		Character->GetCharacterMovement()->MaxWalkSpeed = mRunSpeed;
 
-	//	APlayerCharacterGAS* GAS = Cast<APlayerCharacterGAS>(Character);
+		APlayerCharacterGAS* GAS = Cast<APlayerCharacterGAS>(Character);
 
-	//	if (IsValid(GAS))
-	//	{
-	//		UPlayerInfoWidget* InfoWidget = GAS->GetInfoWidget();
+		if (IsValid(GAS))
+		{
+			UPlayerInfoWidget* InfoWidget = GAS->GetInfoWidget();
 
-	//		if (IsValid(InfoWidget))
-	//		{
-	//			InfoWidget->SetPlayerName(mName);
-	//		}
+			if (IsValid(InfoWidget))
+			{
+				InfoWidget->SetPlayerName(mName);
+			}
 
-	//		UPlayerAttributeSet* Attr = GAS->GetAttributeSet();
+			UPlayerAttributeSet* Attr = GAS->GetAttributeSet();
 
-	//		if (IsValid(Attr))
-	//		{
-	//			UE_LOG(UELOG, Warning, TEXT("Attribute Set Complete"));
-	//			Attr->SetAttack(mAttack);
-	//			Attr->SetDefense(mDefense);
-	//			Attr->SetHP(mHP);
-	//			Attr->SetHPMax(mHPMax);
-	//			Attr->SetMP(mMP);
-	//			Attr->SetMPMax(mMPMax);
-	//			Attr->SetWalkSpeed(mWalkSpeed);
-	//			Attr->SetRunSpeed(mRunSpeed);
-	//			Attr->SetAttackDistance(mAttackDistance);
-	//			Attr->SetGold(mGold);
-	//			Attr->SetJob((float)mJob);
-	//		}
-	//	}
-	//}	
+			if (IsValid(Attr))
+			{
+				UE_LOG(UELOG, Warning, TEXT("Attribute Set Complete"));
+				Attr->SetAttack(mAttack);
+				Attr->SetDefense(mDefense);
+				Attr->SetHP(mHP);
+				Attr->SetHPMax(mHPMax);
+				Attr->SetMP(mMP);
+				Attr->SetMPMax(mMPMax);
+				Attr->SetWalkSpeed(mWalkSpeed);
+				Attr->SetRunSpeed(mRunSpeed);
+				Attr->SetAttackDistance(mAttackDistance);
+				Attr->SetGold(mGold);
+				Attr->SetJob((float)mJob);
+			}
+		}
+	}
 }

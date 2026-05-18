@@ -2,36 +2,39 @@
 
 #pragma once
 
-#include "../GameInfo.h"
+#include "ActiveGameplayEffectHandle.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FInventoryItemChange, class UItemObject*, int32);
+struct FItemTableInfo;
+class UItemObject;
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FInventoryItemChange, UItemObject*, int32);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FInventoryItemCountChange, int32, int32);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FInventoryItemEquipChange, int32, bool);
 DECLARE_MULTICAST_DELEGATE_OneParam(FInventoryGoldChange, int32);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta = (BlueprintSpawnableComponent))
 class UE20252NETWORK_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UInventoryComponent();
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	TArray<TObjectPtr<class UItemObject>>	mItemList;
+	UPROPERTY(VisibleAnywhere, Replicated, Category = "Inventory")
+	TArray<TObjectPtr<UItemObject>>	mItemList;
 
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	int32			mInventoryMaxCount = 30;
+	int32 mInventoryMaxCount = 30;
 
-	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	int32			mItemCount = 0;
+	UPROPERTY(VisibleAnywhere, Replicated, Category = "Inventory")
+	int32 mItemCount = 0;
 
-	int32			mEquipWeaponIndex = -1;
-	FActiveGameplayEffectHandle		mWeaponHandle;
-	TObjectPtr<class UItemObject>	mEquipWeapon;
+	int32 mEquipWeaponIndex = -1;
+	FActiveGameplayEffectHandle mWeaponHandle;
+	TObjectPtr<UItemObject>	mEquipWeapon;
 
 public:
 	int32 GetInventoryMax()	const
@@ -50,10 +53,10 @@ public:
 	}
 
 public:
-	FInventoryItemChange	mItemChange;
-	FInventoryGoldChange	mGoldChange;
-	FInventoryItemCountChange	mItemCountChange;
-	FInventoryItemEquipChange	mItemEquipChange;
+	FInventoryItemChange mItemChange;
+	FInventoryGoldChange mGoldChange;
+	FInventoryItemCountChange mItemCountChange;
+	FInventoryItemEquipChange mItemEquipChange;
 
 
 protected:
@@ -62,8 +65,9 @@ protected:
 public:
 	virtual void InitializeComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-public:
 	void AddItem(const FItemTableInfo* Info);
 	void ChangeGold(int32 Gold);
 	void ItemInfoLoadComplete();
@@ -80,4 +84,9 @@ private:
 	float GetItemAttack(int32 Index);
 	void ApplyItemAttack(int32 Index);
 	void RemoveItemAttack(int32 Index);
+
+public:
+	UFUNCTION(Client, Reliable)
+	void SetItemCli(UItemObject* Item, int32 Index);
+	void SetItemCli_Implementation(UItemObject* Item, int32 Index);
 };

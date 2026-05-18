@@ -11,6 +11,8 @@ void UAssetGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collectio
 {
 	Super::Initialize(Collection);
 
+	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Subsystem Initialize"));
+
 	LoadMonsterData();
 
 	LoadItemData();
@@ -27,12 +29,13 @@ void UAssetGameInstanceSubsystem::LoadMonsterData()
 {
 	UAssetManager& AssetMgr = UAssetManager::Get();
 
-	FPrimaryAssetId	AssetId(TEXT("MonsterInfoTableAsset"), TEXT("PDA_MonsterInfo"));
+	FPrimaryAssetId AssetId(TEXT("MonsterInfoTableAsset"), TEXT("PDA_MonsterInfo"));
 
 	// 비동기 로딩을 진행해준다. 로딩 명령을 내려놓고 로딩이 끝나면 지정된 함수가
 	// 호출된다.
 	AssetMgr.LoadPrimaryAsset(AssetId, TArray<FName>{},
-		FStreamableDelegate::CreateUObject(this, &UAssetGameInstanceSubsystem::MonsterInfoLoadComplete, AssetId));
+	                          FStreamableDelegate::CreateUObject(
+		                          this, &UAssetGameInstanceSubsystem::MonsterInfoLoadComplete, AssetId));
 }
 
 void UAssetGameInstanceSubsystem::MonsterInfoLoadComplete(FPrimaryAssetId LoadId)
@@ -40,9 +43,9 @@ void UAssetGameInstanceSubsystem::MonsterInfoLoadComplete(FPrimaryAssetId LoadId
 	UAssetManager& AssetMgr = UAssetManager::Get();
 
 	// 로딩된 오브젝트를 얻어온다.
-	TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
+	TObjectPtr<UObject> LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
 
-	TObjectPtr<UMonsterInfoTableAsset>	DataAsset =
+	TObjectPtr<UMonsterInfoTableAsset> DataAsset =
 		Cast<UMonsterInfoTableAsset>(LoadObject);
 
 	if (!DataAsset)
@@ -66,7 +69,7 @@ void UAssetGameInstanceSubsystem::MonsterInfoLoadComplete(FPrimaryAssetId LoadId
 		mMonsterInfoLoadDelegate.Broadcast();
 }
 
-const FMonsterInfo* UAssetGameInstanceSubsystem::FindMonsterInfo(const FName& Name)	const
+const FMonsterInfo* UAssetGameInstanceSubsystem::FindMonsterInfo(const FName& Name) const
 {
 	if (!mMonsterInfoTable)
 		return nullptr;
@@ -78,12 +81,13 @@ void UAssetGameInstanceSubsystem::LoadItemData()
 {
 	UAssetManager& AssetMgr = UAssetManager::Get();
 
-	FPrimaryAssetId	ItemAssetId(TEXT("ItemInfoTableAsset"), TEXT("PDA_ItemInfo"));
+	FPrimaryAssetId ItemAssetId(TEXT("ItemInfoTableAsset"), TEXT("PDA_ItemInfo"));
 
 	// 비동기 로딩을 진행해준다. 로딩 명령을 내려놓고 로딩이 끝나면 지정된 함수가
 	// 호출된다.
 	AssetMgr.LoadPrimaryAsset(ItemAssetId, TArray<FName>{},
-		FStreamableDelegate::CreateUObject(this, &UAssetGameInstanceSubsystem::ItemInfoLoadComplete, ItemAssetId));
+	                          FStreamableDelegate::CreateUObject(
+		                          this, &UAssetGameInstanceSubsystem::ItemInfoLoadComplete, ItemAssetId));
 }
 
 void UAssetGameInstanceSubsystem::ItemInfoLoadComplete(FPrimaryAssetId LoadId)
@@ -91,13 +95,14 @@ void UAssetGameInstanceSubsystem::ItemInfoLoadComplete(FPrimaryAssetId LoadId)
 	UAssetManager& AssetMgr = UAssetManager::Get();
 
 	// 로딩된 오브젝트를 얻어온다.
-	TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
+	TObjectPtr<UObject> LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
 
-	TObjectPtr<UItemInfoTableAsset>	DataAsset =
+	TObjectPtr<UItemInfoTableAsset> DataAsset =
 		Cast<UItemInfoTableAsset>(LoadObject);
 
 	if (!DataAsset)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Blue, TEXT("ItemInfo Load Failed"));
 		UE_LOG(UELOG, Warning, TEXT("ItemInfo Load Failed"));
 		return;
 	}
@@ -106,10 +111,12 @@ void UAssetGameInstanceSubsystem::ItemInfoLoadComplete(FPrimaryAssetId LoadId)
 
 	if (!mItemInfoTable)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Blue, TEXT("ItemInfo DataTable Load Failed"));
 		UE_LOG(UELOG, Warning, TEXT("ItemInfo DataTable Load Failed"));
 		return;
 	}
 
+	GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Blue, TEXT("ItemInfo Load Complete"));
 	UE_LOG(UELOG, Warning, TEXT("ItemInfo Load Complete"));
 
 	// 등록된 함수를 호출한다.
@@ -117,7 +124,7 @@ void UAssetGameInstanceSubsystem::ItemInfoLoadComplete(FPrimaryAssetId LoadId)
 		mItemInfoLoadDelegate.Broadcast();
 }
 
-const FItemTableInfo* UAssetGameInstanceSubsystem::FindItemInfo(const FName& Name)	const
+const FItemTableInfo* UAssetGameInstanceSubsystem::FindItemInfo(const FName& Name) const
 {
 	if (!mItemInfoTable)
 		return nullptr;
@@ -129,12 +136,13 @@ void UAssetGameInstanceSubsystem::LoadDropItemData()
 {
 	UAssetManager& AssetMgr = UAssetManager::Get();
 
-	FPrimaryAssetId	ItemAssetId(TEXT("DropItemInfoTableAsset"), TEXT("PDA_DropItemInfo"));
+	FPrimaryAssetId ItemAssetId(TEXT("DropItemInfoTableAsset"), TEXT("PDA_DropItemInfo"));
 
 	// 비동기 로딩을 진행해준다. 로딩 명령을 내려놓고 로딩이 끝나면 지정된 함수가
 	// 호출된다.
 	AssetMgr.LoadPrimaryAsset(ItemAssetId, TArray<FName>{},
-		FStreamableDelegate::CreateUObject(this, &UAssetGameInstanceSubsystem::DropItemInfoLoadComplete, ItemAssetId));
+	                          FStreamableDelegate::CreateUObject(
+		                          this, &UAssetGameInstanceSubsystem::DropItemInfoLoadComplete, ItemAssetId));
 }
 
 void UAssetGameInstanceSubsystem::DropItemInfoLoadComplete(FPrimaryAssetId LoadId)
@@ -142,9 +150,9 @@ void UAssetGameInstanceSubsystem::DropItemInfoLoadComplete(FPrimaryAssetId LoadI
 	UAssetManager& AssetMgr = UAssetManager::Get();
 
 	// 로딩된 오브젝트를 얻어온다.
-	TObjectPtr<UObject>	LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
+	TObjectPtr<UObject> LoadObject = AssetMgr.GetPrimaryAssetObject(LoadId);
 
-	TObjectPtr<UDropItemInfoTableAsset>	DataAsset =
+	TObjectPtr<UDropItemInfoTableAsset> DataAsset =
 		Cast<UDropItemInfoTableAsset>(LoadObject);
 
 	if (!DataAsset)
@@ -169,7 +177,7 @@ void UAssetGameInstanceSubsystem::DropItemInfoLoadComplete(FPrimaryAssetId LoadI
 }
 
 const FDropItemTableInfo* UAssetGameInstanceSubsystem::FindDropItemInfo(
-	const FName& Name)	const
+	const FName& Name) const
 {
 	if (!mDropItemInfoTable)
 		return nullptr;
