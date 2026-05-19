@@ -25,19 +25,24 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ConnectWidget();
+	auto* OwnerPawn = Cast<APawn>(GetOwner());
+	if (IsValid(OwnerPawn) && OwnerPawn->IsLocallyControlled())
+	{
+		ConnectWidget();
+	}
 
 	LoadItem();
+
+	if (bIsPendingRefreshWidget)
+	{
+		bIsPendingRefreshWidget = false;
+		RefreshInventory();
+	}
 }
 
 void UInventoryComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-
-	if (mItemList.IsEmpty())
-	{
-		mItemList.Init(nullptr, mInventoryMaxCount);
-	}
 }
 
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -164,8 +169,6 @@ void UInventoryComponent::ChangeGold(int32 Gold)
 
 void UInventoryComponent::ItemInfoLoadComplete()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Green, TEXT("ItemInfoLoadComplete"));
-
 	mItemList.Init(nullptr, mInventoryMaxCount);
 
 	const UGameInstance* GameInst = GetWorld()->GetGameInstance();
@@ -470,18 +473,13 @@ void UInventoryComponent::RemoveItemAttack(int32 Index)
 
 void UInventoryComponent::OnRep_ItemList()
 {
-	if (!bConnectWidget)
+	if (!bConnectWidget || !mItemChange.IsBound())
 	{
-		ConnectWidget();
+		bIsPendingRefreshWidget = true;
+		return;
 	}
 
-	for (int32 i = 0; i < mInventoryMaxCount; ++i)
-	{
-		if (mItemChange.IsBound())
-		{
-			mItemChange.Broadcast(mItemList[i], i);
-		}
-	}
+	RefreshInventory();
 }
 
 void UInventoryComponent::LoadItem()
@@ -505,6 +503,11 @@ void UInventoryComponent::LoadItem()
 
 void UInventoryComponent::ConnectWidget()
 {
+	if (bConnectWidget)
+	{
+		return;
+	}
+
 	const auto* GameInstance = GetWorld()->GetGameInstance();
 	auto* UISubsystem = GameInstance->GetSubsystem<UUIGameInstanceSubsystem>();;
 
@@ -513,5 +516,21 @@ void UInventoryComponent::ConnectWidget()
 	{
 		bConnectWidget = true;
 		InventoryWidget->InitInventory(this);
+
+		RefreshInventory();
+	}
+}
+
+void UInventoryComponent::RefreshInventory()
+{
+	if (!mItemChange.IsBound())
+	{
+		return;
+	}
+
+	for (int32 i = 0; i < mInventoryMaxCount; i++)
+	{
+		UItemObject* Item = mItemList.IsValidIndex(i) ? mItemList[i] : nullptr;
+		mItemChange.Broadcast(Item, i);
 	}
 }

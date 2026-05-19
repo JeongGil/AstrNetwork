@@ -28,7 +28,9 @@ protected:
 
 	TArray<UGameSlotWidget*> mSlotArray;
 
-	UInventoryComponent* mInventory;
+	UInventoryComponent* mInventory = nullptr;
+
+	bool bIsInventoryInitialized = false;
 
 	bool		mDragEnable = false;
 
@@ -48,7 +50,6 @@ protected:
 	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 public:
-	void InitItemSlot(UInventoryComponent* Inventory);
 	void InitInventory(UInventoryComponent* Inventory);
 
 	void ChangeItem(UItemObject* Item, int32 Index);

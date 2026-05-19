@@ -37,6 +37,7 @@ protected:
 	TObjectPtr<UItemObject> mEquipWeapon;
 
 	bool bConnectWidget = false;
+	bool bIsPendingRefreshWidget = false;
 
 public:
 	int32 GetInventoryMax() const
@@ -93,4 +94,5 @@ public:
 
 	void LoadItem();
 	void ConnectWidget();
+	void RefreshInventory();
 };

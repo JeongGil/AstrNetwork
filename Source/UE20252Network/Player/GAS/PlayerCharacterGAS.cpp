@@ -97,13 +97,13 @@ void APlayerCharacterGAS::BeginPlay()
 	mAnimInst = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance());
 
 	// PlayerController를 얻어온다.
-	TObjectPtr<APlayerController>	PlayerController = GetController<APlayerController>();
+	TObjectPtr<APlayerController> PlayerController = GetController<APlayerController>();
 
 	// IsValid : 유효성 검사를 해주는 함수이다. 언리얼 객체가 유효한지를 판단해준다.
 	if (IsValid(PlayerController))
 	{
 		// Enhanced Input System을 얻어온다.
-		TObjectPtr<UEnhancedInputLocalPlayerSubsystem>	Subsystem =
+		TObjectPtr<UEnhancedInputLocalPlayerSubsystem> Subsystem =
 			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
 
 		// UDefaultInputData CDO를 얻어온다.
@@ -122,13 +122,16 @@ void APlayerCharacterGAS::BeginPlay()
 	mASC->InitAbilityActorInfo(this, this);
 
 	mASC->GiveAbility(FGameplayAbilitySpec(UGameplayAbility_Attack::StaticClass(),
-		1, 0));
+	                                       1, 0));
 
-	mASC->GetGameplayAttributeValueChangeDelegate(UBaseAttributeSet::GetHPAttribute()).AddUObject(this, &APlayerCharacterGAS::OnHPChange);
+	mASC->GetGameplayAttributeValueChangeDelegate(UBaseAttributeSet::GetHPAttribute()).AddUObject(
+		this, &APlayerCharacterGAS::OnHPChange);
 
-	mASC->GetGameplayAttributeValueChangeDelegate(UBaseAttributeSet::GetMPAttribute()).AddUObject(this, &APlayerCharacterGAS::OnMPChange);
+	mASC->GetGameplayAttributeValueChangeDelegate(UBaseAttributeSet::GetMPAttribute()).AddUObject(
+		this, &APlayerCharacterGAS::OnMPChange);
 
-	mASC->GetGameplayAttributeValueChangeDelegate(UBaseAttributeSet::GetGoldAttribute()).AddUObject(this, &APlayerCharacterGAS::OnGoldChange);
+	mASC->GetGameplayAttributeValueChangeDelegate(UBaseAttributeSet::GetGoldAttribute()).AddUObject(
+		this, &APlayerCharacterGAS::OnGoldChange);
 
 	// if (HasAuthority())
 	// {
@@ -140,7 +143,6 @@ void APlayerCharacterGAS::BeginPlay()
 void APlayerCharacterGAS::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -150,7 +152,7 @@ void APlayerCharacterGAS::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 	// 인자로 들어온 InputComponent를 EnhancedInputComponent로 형변환한다.
 	// 언리얼 오브젝트는 항상 Cast<Type>() 함수를 이용해서 형변환한다.
-	TObjectPtr<UEnhancedInputComponent>	Input =
+	TObjectPtr<UEnhancedInputComponent> Input =
 		Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
 	if (IsValid(Input))
@@ -160,41 +162,58 @@ void APlayerCharacterGAS::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		// 이동키를 누를때 동작할 함수를 바인딩한다.
 		Input->BindAction(InputData->FindAction(TEXT("Move")), ETriggerEvent::Triggered,
-			this, &APlayerCharacterGAS::MoveKey);
+		                  this, &APlayerCharacterGAS::MoveKey);
 
 		Input->BindAction(InputData->FindAction(TEXT("Rotation")), ETriggerEvent::Triggered,
-			this, &APlayerCharacterGAS::RotationKey);
+		                  this, &APlayerCharacterGAS::RotationKey);
 
 		Input->BindAction(InputData->FindAction(TEXT("Jump")), ETriggerEvent::Started,
-			this, &APlayerCharacterGAS::JumpKey);
+		                  this, &APlayerCharacterGAS::JumpKey);
 
 		Input->BindAction(InputData->FindAction(TEXT("Attack")), ETriggerEvent::Started,
-			this, &APlayerCharacterGAS::AttackKey);
+		                  this, &APlayerCharacterGAS::AttackKey);
 
 		Input->BindAction(InputData->FindAction(TEXT("Skill1")), ETriggerEvent::Started,
-			this, &APlayerCharacterGAS::Skill1Key);
+		                  this, &APlayerCharacterGAS::Skill1Key);
 
 		Input->BindAction(InputData->FindAction(TEXT("Skill2")), ETriggerEvent::Started,
-			this, &APlayerCharacterGAS::Skill2Key);
+		                  this, &APlayerCharacterGAS::Skill2Key);
 
 		Input->BindAction(InputData->FindAction(TEXT("Skill2")), ETriggerEvent::Completed,
-			this, &APlayerCharacterGAS::Skill2ReleasedKey);
+		                  this, &APlayerCharacterGAS::Skill2ReleasedKey);
 
 		Input->BindAction(InputData->FindAction(TEXT("Skill3")), ETriggerEvent::Started,
-			this, &APlayerCharacterGAS::Skill3Key);
+		                  this, &APlayerCharacterGAS::Skill3Key);
 
 		Input->BindAction(InputData->FindAction(TEXT("ColorChange")),
-			ETriggerEvent::Completed,
-			this, &APlayerCharacterGAS::ColorChangeKey);
+		                  ETriggerEvent::Completed,
+		                  this, &APlayerCharacterGAS::ColorChangeKey);
 	}
 }
 
-float APlayerCharacterGAS::TakeDamage(float DamageAmount,
-	struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
-	AActor* DamageCauser)
+void APlayerCharacterGAS::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	auto* MainPlayerState = GetPlayerState<AMainPlayerState>();
+	if (!IsValid(MainPlayerState))
+	{
+		return;
+	}
+
+	MainPlayerState->LoadPlayerInfo(mPlayerName);
+}
+
+float APlayerCharacterGAS::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+                                      AActor* DamageCauser)
 {
 	float Dmg = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator,
-		DamageCauser);
+	                              DamageCauser);
 
 	if (Dmg == 0.f)
 		return 0.f;
@@ -210,7 +229,7 @@ float APlayerCharacterGAS::TakeDamage(float DamageAmount,
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red,
-		FString::Printf(TEXT("Dmg : %.5f"), Dmg));
+	                                 FString::Printf(TEXT("Dmg : %.5f"), Dmg));
 
 	//CanBeDamaged()
 
@@ -219,7 +238,7 @@ float APlayerCharacterGAS::TakeDamage(float DamageAmount,
 
 void APlayerCharacterGAS::MoveKey(const FInputActionValue& Value)
 {
-	FVector	Axis = Value.Get<FVector>();
+	FVector Axis = Value.Get<FVector>();
 
 	AddMovementInput(GetActorForwardVector(), Axis.X);
 
@@ -236,7 +255,7 @@ void APlayerCharacterGAS::MoveKey(const FInputActionValue& Value)
 
 void APlayerCharacterGAS::RotationKey(const FInputActionValue& Value)
 {
-	FVector	Axis = Value.Get<FVector>();
+	FVector Axis = Value.Get<FVector>();
 
 	//AddControllerYawInput(Axis.X);
 	mSpringArm->AddRelativeRotation(FRotator(Axis.Y, Axis.X, 0.0));
@@ -307,10 +326,10 @@ void APlayerCharacterGAS::Skill2Key(const FInputActionValue& Value)
 	}
 
 	// 쿨타임 남은시간 확인
-	FGameplayEffectQuery	Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(
+	FGameplayEffectQuery Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(
 		FGameplayTagContainer(FGameplayTag::RequestGameplayTag(TEXT("Effect.Skill.CoolDown2"))));
 
-	TArray<float>	Times = mASC->GetActiveEffectsTimeRemaining(Query);
+	TArray<float> Times = mASC->GetActiveEffectsTimeRemaining(Query);
 
 	if (Times.Num() > 0)
 	{
@@ -463,8 +482,7 @@ ETeamAttitude::Type APlayerCharacterGAS::GetTeamAttitudeTowards(const AActor& Ot
 	else if (OtherTeamAgent->GetGenericTeamId().GetId() == TeamNeutral)
 		return ETeamAttitude::Neutral;
 
-	return GetGenericTeamId() == OtherTeamAgent->GetGenericTeamId() ?
-		ETeamAttitude::Friendly : ETeamAttitude::Hostile;
+	return GetGenericTeamId() == OtherTeamAgent->GetGenericTeamId() ? ETeamAttitude::Friendly : ETeamAttitude::Hostile;
 }
 
 void APlayerCharacterGAS::SvrNormalAttack_Implementation()

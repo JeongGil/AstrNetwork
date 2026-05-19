@@ -24,6 +24,11 @@ void AMainPlayerState::BeginPlay()
 
 void AMainPlayerState::LoadPlayerInfo(const FName& PlayerName)
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
+
 	mTableRowName = PlayerName;
 
 	UAssetManager& AssetMgr = UAssetManager::Get();
@@ -67,15 +72,17 @@ void AMainPlayerState::PlayerInfoLoadComplete(FPrimaryAssetId LoadId)
 
 	mName = Info->PlayerName;
 
-	AMainPlayerController* PlayerCtrl = Cast<AMainPlayerController>(GetOwner());
-
-	if (IsValid(PlayerCtrl))
-	{
-		UMainWidget* MainWidget = PlayerCtrl->GetMainWidget();
-
-		if (IsValid(MainWidget))
-			MainWidget->GetPlayerHUDWidget()->SetPlayerName(mName);
-	}
+	// const auto* PlayerCtrl = Cast<AMainPlayerController>(GetOwner());
+	//
+	// if (IsValid(PlayerCtrl))
+	// {
+	// 	UMainWidget* MainWidget = PlayerCtrl->GetMainWidget();
+	//
+	// 	if (IsValid(MainWidget))
+	// 	{
+	// 		MainWidget->GetPlayerHUDWidget()->SetPlayerName(mName);
+	// 	}
+	// }
 
 	mJob = Info->Job;
 	mLevel = Info->Level;
@@ -95,40 +102,40 @@ void AMainPlayerState::PlayerInfoLoadComplete(FPrimaryAssetId LoadId)
 
 	mAbilityMap = Info->AbilityMap;
 
-	if (PlayerCtrl)
-	{
-		ACharacter* Character = PlayerCtrl->GetPawn<ACharacter>();
-
-		Character->GetCharacterMovement()->MaxWalkSpeed = mRunSpeed;
-
-		APlayerCharacterGAS* GAS = Cast<APlayerCharacterGAS>(Character);
-
-		if (IsValid(GAS))
-		{
-			UPlayerInfoWidget* InfoWidget = GAS->GetInfoWidget();
-
-			if (IsValid(InfoWidget))
-			{
-				InfoWidget->SetPlayerName(mName);
-			}
-
-			UPlayerAttributeSet* Attr = GAS->GetAttributeSet();
-
-			if (IsValid(Attr))
-			{
-				UE_LOG(UELOG, Warning, TEXT("Attribute Set Complete"));
-				Attr->SetAttack(mAttack);
-				Attr->SetDefense(mDefense);
-				Attr->SetHP(mHP);
-				Attr->SetHPMax(mHPMax);
-				Attr->SetMP(mMP);
-				Attr->SetMPMax(mMPMax);
-				Attr->SetWalkSpeed(mWalkSpeed);
-				Attr->SetRunSpeed(mRunSpeed);
-				Attr->SetAttackDistance(mAttackDistance);
-				Attr->SetGold(mGold);
-				Attr->SetJob((float)mJob);
-			}
-		}
-	}
+	// if (PlayerCtrl)
+	// {
+	// 	ACharacter* Character = PlayerCtrl->GetPawn<ACharacter>();
+	//
+	// 	Character->GetCharacterMovement()->MaxWalkSpeed = mRunSpeed;
+	//
+	// 	APlayerCharacterGAS* GAS = Cast<APlayerCharacterGAS>(Character);
+	//
+	// 	if (IsValid(GAS))
+	// 	{
+	// 		UPlayerInfoWidget* InfoWidget = GAS->GetInfoWidget();
+	//
+	// 		if (IsValid(InfoWidget))
+	// 		{
+	// 			InfoWidget->SetPlayerName(mName);
+	// 		}
+	//
+	// 		UPlayerAttributeSet* Attr = GAS->GetAttributeSet();
+	//
+	// 		if (IsValid(Attr))
+	// 		{
+	// 			UE_LOG(UELOG, Warning, TEXT("Attribute Set Complete"));
+	// 			Attr->SetAttack(mAttack);
+	// 			Attr->SetDefense(mDefense);
+	// 			Attr->SetHP(mHP);
+	// 			Attr->SetHPMax(mHPMax);
+	// 			Attr->SetMP(mMP);
+	// 			Attr->SetMPMax(mMPMax);
+	// 			Attr->SetWalkSpeed(mWalkSpeed);
+	// 			Attr->SetRunSpeed(mRunSpeed);
+	// 			Attr->SetAttackDistance(mAttackDistance);
+	// 			Attr->SetGold(mGold);
+	// 			Attr->SetJob((float)mJob);
+	// 		}
+	// 	}
+	// }
 }

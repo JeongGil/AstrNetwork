@@ -71,29 +71,22 @@ FReply UInventoryWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FP
 	return FReply::Handled();
 }
 
-void UInventoryWidget::InitItemSlot(UInventoryComponent* Inventory)
-{
-	mInventory = Inventory;
-
-	int32 MaxCount = mInventory->GetInventoryMax();
-
-	for (int32 i = 0; i < MaxCount; ++i)
-	{
-		FString SlotName = TEXT("WB_GameSlot_") + FString::FromInt(i + 1);
-
-		UGameSlotWidget* InvenSlot = Cast<UGameSlotWidget>(GetWidgetFromName(*SlotName));
-
-		//InvenSlot->SetInventoryComponent(mInventory);
-		InvenSlot->SetIndex(i);
-		InvenSlot->SetItem(nullptr);
-
-		mSlotArray.Add(InvenSlot);
-	}
-}
-
 void UInventoryWidget::InitInventory(UInventoryComponent* Inventory)
 {
+	if (!IsValid(Inventory))
+	{
+		return;
+	}
+
+	if (mInventory == Inventory && bIsInventoryInitialized)
+	{
+		return;
+	}
+
+	bIsInventoryInitialized = true;
 	mInventory = Inventory;
+
+	mSlotArray.Empty();
 
 	int32 MaxCount = mInventory->GetInventoryMax();
 
@@ -110,10 +103,25 @@ void UInventoryWidget::InitInventory(UInventoryComponent* Inventory)
 		mSlotArray.Add(InvenSlot);
 	}
 
-	mInventory->mItemChange.AddUObject(this, &UInventoryWidget::ChangeItem);
-	mInventory->mGoldChange.AddUObject(this, &UInventoryWidget::ChangeGold);
-	mInventory->mItemCountChange.AddUObject(this, &UInventoryWidget::ChangeItemCount);
-	mInventory->mItemEquipChange.AddUObject(this, &UInventoryWidget::ChangeItemEquip);
+	if (!mInventory->mItemChange.IsBound())
+	{
+		mInventory->mItemChange.AddUObject(this, &UInventoryWidget::ChangeItem);
+	}
+
+	if (!mInventory->mGoldChange.IsBound())
+	{
+		mInventory->mGoldChange.AddUObject(this, &UInventoryWidget::ChangeGold);
+	}
+
+	if (!mInventory->mItemCountChange.IsBound())
+	{
+		mInventory->mItemCountChange.AddUObject(this, &UInventoryWidget::ChangeItemCount);
+	}
+
+	if (!mInventory->mItemEquipChange.IsBound())
+	{
+		mInventory->mItemEquipChange.AddUObject(this, &UInventoryWidget::ChangeItemEquip);
+	}
 }
 
 void UInventoryWidget::ChangeItem(UItemObject* Item, int32 Index)
