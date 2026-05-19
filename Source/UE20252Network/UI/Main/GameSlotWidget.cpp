@@ -57,20 +57,9 @@ void UGameSlotWidget::SetItem(class UItemObject* Item)
 {
 	if (IsValid(Item))
 	{
-		UGameInstance* GameInstance = GetWorld()->GetGameInstance();
-		auto* AssetSubsystem = GameInstance->GetSubsystem<UAssetGameInstanceSubsystem>();
+		Item->CheckIconTexture();
 
-		if (IsValid(AssetSubsystem))
-		{
-			if (const FItemTableInfo* Info = AssetSubsystem->FindItemInfo(Item->GetItemRowName()))
-			{
-				mIcon->SetIconImage(Info->IconImage);
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("ItemInfo is nullptr"));
-			}
-		}
+		mIcon->SetIconImage(Item->GetItemIconImage());
 
 		if (Item->GetItemLayerType() == EItemWidgetLayerType::Layered)
 		{
@@ -82,10 +71,8 @@ void UGameSlotWidget::SetItem(class UItemObject* Item)
 			mIcon->EnableCountText(false);
 		}
 
-		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Icon Visible"));
 		mIcon->SetVisibility(ESlateVisibility::Visible);
 	}
-
 	else
 	{
 		mIcon->SetIconImage(nullptr);

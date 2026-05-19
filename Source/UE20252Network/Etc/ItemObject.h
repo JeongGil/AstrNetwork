@@ -19,9 +19,6 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FName mItemRowName;
-
-	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FString mItemName;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -46,6 +43,16 @@ private:
 	UTexture2D* mIconImage;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FString mIconPath;
+
+	bool bIconLoaded = false;
+
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FString mMeshPath;
+
+	bool bMeshLoaded = false;
+
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UStaticMesh* mMesh;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -58,10 +65,6 @@ private:
 	int32 mCount = 1;
 
 public:
-	FName GetItemRowName() const
-	{
-		return mItemRowName;
-	}
 
 	EItemWidgetLayerType GetItemLayerType() const
 	{
@@ -157,7 +160,9 @@ public:
 	}
 
 public:
-	void SetItemInfo(FName ItemRowName, const FItemTableInfo* Info);
+	void SetItemInfo(const FItemTableInfo* Info);
+	void CheckIconTexture();
+	void CheckMesh();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

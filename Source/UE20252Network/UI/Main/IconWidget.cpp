@@ -148,11 +148,6 @@ void UIconWidget::NativeOnDragDetected(const FGeometry& InGeometry,
 
 void UIconWidget::SetIconImage(UTexture2D* Image)
 {
-	if (IsValid(Image))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Icon Image"));
-	}
-
 	mIconTexture = Image;
 	mIconImage->SetBrushFromTexture(Image);
 }

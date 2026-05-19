@@ -9,9 +9,8 @@ UItemObject::UItemObject()
 {
 }
 
-void UItemObject::SetItemInfo(const FName ItemRowName, const FItemTableInfo* Info)
+void UItemObject::SetItemInfo(const FItemTableInfo* Info)
 {
-	mItemRowName = ItemRowName;
 	mItemName = Info->ItemName;
 	mItemType = Info->ItemType;
 	mWidgetLayeredType = Info->WidgetLayeredType;
@@ -19,9 +18,37 @@ void UItemObject::SetItemInfo(const FName ItemRowName, const FItemTableInfo* Inf
 	mDesc = Info->Desc;
 	mPurchasePrice = Info->PurchasePrice;
 	mSellPrice = Info->SellPrice;
-	mIconImage = Info->IconImage;
-	mMesh = Info->Mesh;
+	mIconImage = nullptr;
+	mMesh = nullptr;
 	mOptions = Info->Options;
+
+	if (Info->IconImage)
+	{
+		mIconPath = Info->IconImage->GetPathName();
+	}
+
+	if (Info->Mesh)
+	{
+		mMeshPath = Info->Mesh->GetPathName();
+	}
+}
+
+void UItemObject::CheckIconTexture()
+{
+	if (!bIconLoaded)
+	{
+		bIconLoaded = true;
+		mIconImage = LoadObject<UTexture2D>(nullptr, mIconPath);
+	}
+}
+
+void UItemObject::CheckMesh()
+{
+	if (!bMeshLoaded)
+	{
+		bMeshLoaded = true;
+		mMesh = LoadObject<UStaticMesh>(nullptr, mMeshPath);
+	}
 }
 
 void UItemObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

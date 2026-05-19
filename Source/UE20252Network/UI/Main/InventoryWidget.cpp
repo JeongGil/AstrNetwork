@@ -108,13 +108,6 @@ void UInventoryWidget::InitInventory(UInventoryComponent* Inventory)
 		InvenSlot->SetItem(nullptr);
 
 		mSlotArray.Add(InvenSlot);
-
-		// UItemObject* Item = mInventory->GetItem(i);
-		//
-		// if (IsValid(Item))
-		// {
-		// 	mSlotArray[i]->SetItem(Item);
-		// }
 	}
 
 	mInventory->mItemChange.AddUObject(this, &UInventoryWidget::ChangeItem);
@@ -125,15 +118,7 @@ void UInventoryWidget::InitInventory(UInventoryComponent* Inventory)
 
 void UInventoryWidget::ChangeItem(UItemObject* Item, int32 Index)
 {
-	if (IsValid(mSlotArray[Index]))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Slot Is Complete"));
-		mSlotArray[Index]->SetItem(Item);
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Slot Is Nullptr"));
-	}
+	mSlotArray[Index]->SetItem(Item);
 }
 
 void UInventoryWidget::ChangeGold(int32 Gold)

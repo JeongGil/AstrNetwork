@@ -33,6 +33,11 @@ void UInventoryComponent::BeginPlay()
 void UInventoryComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
+
+	if (mItemList.IsEmpty())
+	{
+		mItemList.Init(nullptr, mInventoryMaxCount);
+	}
 }
 
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -100,15 +105,13 @@ void UInventoryComponent::AddItem(const FItemTableInfo* Info, const FName ItemRo
 		{
 			UItemObject* Item = NewObject<UItemObject>();
 
-			Item->SetItemInfo(ItemRowName, Info);
+			Item->SetItemInfo(Info);
 
 			for (int32 i = 0; i < mInventoryMaxCount; ++i)
 			{
 				if (!IsValid(mItemList[i]))
 				{
 					mItemList[i] = Item;
-
-					GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("AddItem"));
 
 					++mItemCount;
 
@@ -128,7 +131,7 @@ void UInventoryComponent::AddItem(const FItemTableInfo* Info, const FName ItemRo
 	{
 		UItemObject* Item = NewObject<UItemObject>(GetOwner());
 
-		Item->SetItemInfo(ItemRowName, Info);
+		Item->SetItemInfo(Info);
 
 		for (int32 i = 0; i < mInventoryMaxCount; ++i)
 		{
@@ -467,31 +470,16 @@ void UInventoryComponent::RemoveItemAttack(int32 Index)
 
 void UInventoryComponent::OnRep_ItemList()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Blue, TEXT("OnRep_ItemList"));
-
-	if (mItemList.IsEmpty())
-	{
-		mItemList.Init(nullptr, mInventoryMaxCount);
-	}
-
 	if (!bConnectWidget)
 	{
 		ConnectWidget();
 	}
 
-	int32 Count = mItemList.Num();
-
-	for (int32 i = 0; i < Count; ++i)
+	for (int32 i = 0; i < mInventoryMaxCount; ++i)
 	{
-		auto& Item = mItemList[i];
 		if (mItemChange.IsBound())
 		{
-			if (IsValid(Item))
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Red, TEXT("Item Bound"));
-			}
-
-			mItemChange.Broadcast(Item, i);
+			mItemChange.Broadcast(mItemList[i], i);
 		}
 	}
 }
@@ -523,7 +511,7 @@ void UInventoryComponent::ConnectWidget()
 	auto* InventoryWidget = UISubsystem->FindWidget<UInventoryWidget>(TEXT("Inventory"));
 	if (IsValid(InventoryWidget))
 	{
-		bConnectWidget=true;
+		bConnectWidget = true;
 		InventoryWidget->InitInventory(this);
 	}
 }
