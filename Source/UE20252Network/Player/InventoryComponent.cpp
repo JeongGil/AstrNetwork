@@ -25,31 +25,14 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!GetOwner() || !GetOwner()->HasAuthority())
-	{
-		return;
-	}
+	ConnectWidget();
 
-	UGameInstance* GameInst = GetWorld()->GetGameInstance();
-
-	// 테스트에 사용할 아이템 생성.
-	auto* AssetSubSystem = GameInst->GetSubsystem<UAssetGameInstanceSubsystem>();
-
-	if (AssetSubSystem->GetItemInfoLoadComplete())
-	{
-		ItemInfoLoadComplete();
-	}
-	else
-	{
-		AssetSubSystem->mItemInfoLoadDelegate.AddUObject(this, &UInventoryComponent::ItemInfoLoadComplete);
-	}
+	LoadItem();
 }
 
 void UInventoryComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-
-	mItemList.Init(nullptr, mInventoryMaxCount);
 }
 
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -64,7 +47,10 @@ bool UInventoryComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch*
 
 	for (auto& Item : mItemList)
 	{
-		Result |= Channel->ReplicateSubobject(Item, *Bunch, *RepFlags);
+		if (IsValid(Item))
+		{
+			Result |= Channel->ReplicateSubobject(Item, *Bunch, *RepFlags);
+		}
 	}
 
 	return Result;
@@ -78,7 +64,7 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UInventoryComponent, mItemCount);
 }
 
-void UInventoryComponent::AddItem(const FItemTableInfo* Info)
+void UInventoryComponent::AddItem(const FItemTableInfo* Info, const FName ItemRowName)
 {
 	if (mItemCount == mInventoryMaxCount)
 	{
@@ -114,15 +100,13 @@ void UInventoryComponent::AddItem(const FItemTableInfo* Info)
 		{
 			UItemObject* Item = NewObject<UItemObject>();
 
-			Item->SetItemInfo(Info);
+			Item->SetItemInfo(ItemRowName, Info);
 
 			for (int32 i = 0; i < mInventoryMaxCount; ++i)
 			{
 				if (!IsValid(mItemList[i]))
 				{
 					mItemList[i] = Item;
-
-					SetItemCli(Item, i);
 
 					GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("AddItem"));
 
@@ -144,15 +128,13 @@ void UInventoryComponent::AddItem(const FItemTableInfo* Info)
 	{
 		UItemObject* Item = NewObject<UItemObject>(GetOwner());
 
-		Item->SetItemInfo(Info);
+		Item->SetItemInfo(ItemRowName, Info);
 
 		for (int32 i = 0; i < mInventoryMaxCount; ++i)
 		{
 			if (!IsValid(mItemList[i]))
 			{
 				mItemList[i] = Item;
-
-				SetItemCli(Item, i);
 
 				++mItemCount;
 
@@ -181,6 +163,8 @@ void UInventoryComponent::ItemInfoLoadComplete()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Green, TEXT("ItemInfoLoadComplete"));
 
+	mItemList.Init(nullptr, mInventoryMaxCount);
+
 	const UGameInstance* GameInst = GetWorld()->GetGameInstance();
 
 	// 테스트에 사용할 아이템 생성.
@@ -194,25 +178,12 @@ void UInventoryComponent::ItemInfoLoadComplete()
 	ItemNames.Add(TEXT("potion_001"));
 	ItemNames.Add(TEXT("potion_001"));
 
-	for (int32 i = 0; i < 6; ++i)
+	for (const auto& ItemName : ItemNames)
 	{
-		const FItemTableInfo* Info = AssetSubSystem->FindItemInfo(ItemNames[i]);
-
-		if (!Info)
+		if (const FItemTableInfo* Info = AssetSubSystem->FindItemInfo(ItemName))
 		{
-			continue;
+			AddItem(Info, ItemName);
 		}
-
-		AddItem(Info);
-	}
-
-	auto* UISubSystem = GameInst->GetSubsystem<UUIGameInstanceSubsystem>();
-
-	auto* InventoryWidget = UISubSystem->FindWidget<UInventoryWidget>(TEXT("Inventory"));
-
-	if (IsValid(InventoryWidget))
-	{
-		InventoryWidget->InitInventory(this);
 	}
 }
 
@@ -494,14 +465,65 @@ void UInventoryComponent::RemoveItemAttack(int32 Index)
 	ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
 }
 
-void UInventoryComponent::SetItemCli_Implementation(UItemObject* Item, int32 Index)
+void UInventoryComponent::OnRep_ItemList()
 {
-	mItemList[Index] = Item;
+	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Blue, TEXT("OnRep_ItemList"));
 
-	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("AddItem"));
-
-	if (mItemChange.IsBound())
+	if (mItemList.IsEmpty())
 	{
-		mItemChange.Broadcast(Item, Index);
+		mItemList.Init(nullptr, mInventoryMaxCount);
+	}
+
+	if (!bConnectWidget)
+	{
+		ConnectWidget();
+	}
+
+	int32 Count = mItemList.Num();
+
+	for (int32 i = 0; i < Count; ++i)
+	{
+		auto& Item = mItemList[i];
+		if (mItemChange.IsBound())
+		{
+			if (IsValid(Item))
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Red, TEXT("Item Bound"));
+			}
+
+			mItemChange.Broadcast(Item, i);
+		}
+	}
+}
+
+void UInventoryComponent::LoadItem()
+{
+	if (!GetOwner() || !GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	const auto* GameInstance = GetWorld()->GetGameInstance();
+	auto* AssetSubsystem = GameInstance->GetSubsystem<UAssetGameInstanceSubsystem>();
+	if (AssetSubsystem->GetItemInfoLoadComplete())
+	{
+		ItemInfoLoadComplete();
+	}
+	else
+	{
+		AssetSubsystem->mItemInfoLoadDelegate.AddUObject(this, &UInventoryComponent::ItemInfoLoadComplete);
+	}
+}
+
+void UInventoryComponent::ConnectWidget()
+{
+	const auto* GameInstance = GetWorld()->GetGameInstance();
+	auto* UISubsystem = GameInstance->GetSubsystem<UUIGameInstanceSubsystem>();;
+
+	auto* InventoryWidget = UISubsystem->FindWidget<UInventoryWidget>(TEXT("Inventory"));
+	if (IsValid(InventoryWidget))
+	{
+		bConnectWidget=true;
+		InventoryWidget->InitInventory(this);
 	}
 }

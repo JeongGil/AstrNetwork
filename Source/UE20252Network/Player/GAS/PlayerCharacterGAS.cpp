@@ -129,6 +129,11 @@ void APlayerCharacterGAS::BeginPlay()
 	mASC->GetGameplayAttributeValueChangeDelegate(UBaseAttributeSet::GetMPAttribute()).AddUObject(this, &APlayerCharacterGAS::OnMPChange);
 
 	mASC->GetGameplayAttributeValueChangeDelegate(UBaseAttributeSet::GetGoldAttribute()).AddUObject(this, &APlayerCharacterGAS::OnGoldChange);
+
+	// if (HasAuthority())
+	// {
+	// 	mInventoryCom->LoadItem();
+	// }
 }
 
 // Called every frame

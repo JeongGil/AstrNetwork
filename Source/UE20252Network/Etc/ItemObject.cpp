@@ -9,8 +9,9 @@ UItemObject::UItemObject()
 {
 }
 
-void UItemObject::SetItemInfo(const FItemTableInfo* Info)
+void UItemObject::SetItemInfo(const FName ItemRowName, const FItemTableInfo* Info)
 {
+	mItemRowName = ItemRowName;
 	mItemName = Info->ItemName;
 	mItemType = Info->ItemType;
 	mWidgetLayeredType = Info->WidgetLayeredType;

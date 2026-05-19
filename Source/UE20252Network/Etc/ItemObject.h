@@ -19,25 +19,28 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FString		mItemName;
+	FName mItemRowName;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	EItemType	mItemType;
+	FString mItemName;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	EItemWidgetLayerType	mWidgetLayeredType;
+	EItemType mItemType;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	int32		mLevel;
+	EItemWidgetLayerType mWidgetLayeredType;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FString		mDesc;
+	int32 mLevel;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	int32		mPurchasePrice;
+	FString mDesc;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	int32		mSellPrice;
+	int32 mPurchasePrice;
+
+	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	int32 mSellPrice;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UTexture2D* mIconImage;
@@ -46,63 +49,68 @@ private:
 	UStaticMesh* mMesh;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TArray<FItemOption>		mOptions;
+	TArray<FItemOption> mOptions;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	int32					mUpgrade;
+	int32 mUpgrade;
 
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	int32					mCount = 1;
+	int32 mCount = 1;
 
 public:
-	EItemWidgetLayerType GetItemLayerType()	const
+	FName GetItemRowName() const
+	{
+		return mItemRowName;
+	}
+
+	EItemWidgetLayerType GetItemLayerType() const
 	{
 		return mWidgetLayeredType;
 	}
 
-	FString GetItemName()	const
+	FString GetItemName() const
 	{
 		return mItemName;
 	}
 
-	EItemType GetItemType()	const
+	EItemType GetItemType() const
 	{
 		return mItemType;
 	}
 
-	int32 GetItemLevel()	const
+	int32 GetItemLevel() const
 	{
 		return mLevel;
 	}
 
-	FString GetItemDesc()	const
+	FString GetItemDesc() const
 	{
 		return mDesc;
 	}
 
-	int32 GetItemPurchasePrice()	const
+	int32 GetItemPurchasePrice() const
 	{
 		return mPurchasePrice;
 	}
 
-	int32 GetItemSellPrice()	const
+	int32 GetItemSellPrice() const
 	{
 		return mSellPrice;
 	}
 
-	UTexture2D* GetItemIconImage()	const
+	UTexture2D* GetItemIconImage() const
 	{
 		return mIconImage;
 	}
 
-	UStaticMesh* GetItemMesh()	const
+	UStaticMesh* GetItemMesh() const
 	{
 		return mMesh;
 	}
 
-	float GetItemOption(EItemOptionType Type)	const
+	float GetItemOption(EItemOptionType Type) const
 	{
-		float	Value = 0.f;
+		float Value = 0.f;
 
 		for (auto Option : mOptions)
 		{
@@ -113,12 +121,12 @@ public:
 		return Value;
 	}
 
-	int32 GetItemUpgrade(EItemOptionType Type)	const
+	int32 GetItemUpgrade(EItemOptionType Type) const
 	{
 		return mUpgrade;
 	}
 
-	int32 GetItemCount()	const
+	int32 GetItemCount() const
 	{
 		return mCount;
 	}
@@ -133,7 +141,7 @@ public:
 		mCount += Count;
 	}
 
-	int32 GetItemOptionCount()	const
+	int32 GetItemOptionCount() const
 	{
 		return mOptions.Num();
 	}
@@ -143,13 +151,13 @@ public:
 		return mOptions[Index];
 	}
 
-	const TArray<FItemOption>& GetItemOptions()	const
+	const TArray<FItemOption>& GetItemOptions() const
 	{
 		return mOptions;
 	}
 
 public:
-	void SetItemInfo(const FItemTableInfo* Info);
+	void SetItemInfo(FName ItemRowName, const FItemTableInfo* Info);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

@@ -22,7 +22,7 @@ void UIconWidget::NativeOnInitialized()
 }
 
 FReply UIconWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry,
-	const FPointerEvent& InMouseEvent)
+                                            const FPointerEvent& InMouseEvent)
 {
 	if (InMouseEvent.GetEffectingButton() == EKeys::RightMouseButton)
 	{
@@ -51,13 +51,13 @@ FReply UIconWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry,
 }
 
 FReply UIconWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry,
-	const FPointerEvent& InMouseEvent)
+                                          const FPointerEvent& InMouseEvent)
 {
 	return FReply::Unhandled();
 }
 
 FReply UIconWidget::NativeOnMouseMove(const FGeometry& InGeometry,
-	const FPointerEvent& InMouseEvent)
+                                      const FPointerEvent& InMouseEvent)
 {
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 		return FReply::Unhandled();
@@ -80,9 +80,9 @@ FReply UIconWidget::NativeOnMouseMove(const FGeometry& InGeometry,
 	// 부모 위젯을 꺼내온다.
 	UWidget* ParentWidget = InfoWidget->GetParent();
 
-	FVector2D	MousePos = InMouseEvent.GetScreenSpacePosition();
+	FVector2D MousePos = InMouseEvent.GetScreenSpacePosition();
 
-	FVector2D	WidgetPos = ParentWidget->GetCachedGeometry().AbsoluteToLocal(MousePos);
+	FVector2D WidgetPos = ParentWidget->GetCachedGeometry().AbsoluteToLocal(MousePos);
 
 	WidgetPos.X += 10.0;
 
@@ -92,7 +92,7 @@ FReply UIconWidget::NativeOnMouseMove(const FGeometry& InGeometry,
 }
 
 void UIconWidget::NativeOnMouseEnter(const FGeometry& InGeometry,
-	const FPointerEvent& InMouseEvent)
+                                     const FPointerEvent& InMouseEvent)
 {
 	UE_LOG(UELOG, Warning, TEXT("Mouse Enter"));
 
@@ -126,7 +126,7 @@ void UIconWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 }
 
 void UIconWidget::NativeOnDragDetected(const FGeometry& InGeometry,
-	const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
+                                       const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	UIconDragDropOperation* DragOP = NewObject<UIconDragDropOperation>();
 
@@ -148,6 +148,11 @@ void UIconWidget::NativeOnDragDetected(const FGeometry& InGeometry,
 
 void UIconWidget::SetIconImage(UTexture2D* Image)
 {
+	if (IsValid(Image))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Icon Image"));
+	}
+
 	mIconTexture = Image;
 	mIconImage->SetBrushFromTexture(Image);
 }
@@ -196,16 +201,16 @@ void UIconWidget::InventoryItemData()
 
 	UInventoryComponent* Inventory = InventoryWidget->GetInventory();
 
-	int32	SlotIndex = mParentSlot->GetSlotIndex();
+	int32 SlotIndex = mParentSlot->GetSlotIndex();
 
 	UItemObject* Item = Inventory->GetItem(SlotIndex);
 
 	if (Item)
 	{
-		FString	ItemName = Item->GetItemName();
-		EItemType	ItemType = Item->GetItemType();
-		int32	ItemLevel = Item->GetItemLevel();
-		FString	ItemDesc = Item->GetItemDesc();
+		FString ItemName = Item->GetItemName();
+		EItemType ItemType = Item->GetItemType();
+		int32 ItemLevel = Item->GetItemLevel();
+		FString ItemDesc = Item->GetItemDesc();
 
 		UMainWidget* MainWidget = UISubSystem->FindWidget<UMainWidget>(TEXT("MainWidget"));
 

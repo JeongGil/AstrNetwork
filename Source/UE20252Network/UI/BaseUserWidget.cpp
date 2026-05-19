@@ -3,23 +3,27 @@
 
 #include "BaseUserWidget.h"
 #include "../GameMode/UIGameInstanceSubsystem.h"
+#include "Animation/WidgetAnimation.h"
+#include "Blueprint/WidgetBlueprintGeneratedClass.h"
+#include "UE20252Network/GameInfo.h"
 
-UBaseUserWidget::UBaseUserWidget(const FObjectInitializer& ObjectInitializer)	:
+UBaseUserWidget::UBaseUserWidget(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer)
 {
 }
 
 void UBaseUserWidget::PlayWidgetAnimation(const FString& Name, float PlayStartTime,
-	float PlaySpeed, bool Forward, bool RestoreState, int32 LoopCount)
+                                          float PlaySpeed, bool Forward, bool RestoreState, int32 LoopCount)
 {
-	TObjectPtr<UWidgetAnimation>	Anim = mAnimMap.FindRef(Name);
-
+	const auto Anim = mAnimMap.FindRef(Name);
 	if (IsValid(Anim))
 	{
-		EUMGSequencePlayMode::Type	PlayMode = EUMGSequencePlayMode::Forward;
+		EUMGSequencePlayMode::Type PlayMode = EUMGSequencePlayMode::Forward;
 
 		if (!Forward)
+		{
 			PlayMode = EUMGSequencePlayMode::Reverse;
+		}
 
 		PlayAnimation(Anim, PlayStartTime, LoopCount, PlayMode, PlaySpeed, RestoreState);
 	}
@@ -31,16 +35,14 @@ void UBaseUserWidget::NativeOnInitialized()
 
 	UGameInstance* GameInst = GetGameInstance();
 
-	UUIGameInstanceSubsystem* UISubSystem =
-		GameInst->GetSubsystem<UUIGameInstanceSubsystem>();
+	auto* UISubSystem = GameInst->GetSubsystem<UUIGameInstanceSubsystem>();
 
 	UISubSystem->AddWidget(mWidgetName, this);
 
 	UWidgetBlueprintGeneratedClass* GeneratedClass = GetWidgetTreeOwningClass();
-
 	for (auto& Anim : GeneratedClass->Animations)
 	{
-		FString	Name = Anim->GetName();
+		FString Name = Anim->GetName();
 
 		// 애니메이션 이름 뒤에 _INST가 붙어있기 때문에 제거한다.
 		Name.ReplaceInline(TEXT("_INST"), TEXT(""));
@@ -69,8 +71,7 @@ void UBaseUserWidget::NativeDestruct()
 
 	UGameInstance* GameInst = GetGameInstance();
 
-	UUIGameInstanceSubsystem* UISubSystem =
-		GameInst->GetSubsystem<UUIGameInstanceSubsystem>();
+	auto* UISubSystem = GameInst->GetSubsystem<UUIGameInstanceSubsystem>();
 
 	UISubSystem->RemoveWidget(mWidgetName);
 }

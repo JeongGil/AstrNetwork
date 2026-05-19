@@ -7,6 +7,7 @@
 #include "../../Player/InventoryComponent.h"
 #include "../../GameMode/UIGameInstanceSubsystem.h"
 #include "InventoryWidget.h"
+#include "UE20252Network/GameMode/AssetGameInstanceSubsystem.h"
 
 UGameSlotWidget::UGameSlotWidget(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer)
@@ -21,7 +22,7 @@ void UGameSlotWidget::NativeOnInitialized()
 }
 
 bool UGameSlotWidget::NativeOnDrop(const FGeometry& InGeometry,
-	const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+                                   const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	UIconDragDropOperation* DragOP = Cast<UIconDragDropOperation>(InOperation);
 
@@ -56,19 +57,32 @@ void UGameSlotWidget::SetItem(class UItemObject* Item)
 {
 	if (IsValid(Item))
 	{
-		mIcon->SetIconImage(Item->GetItemIconImage());
+		UGameInstance* GameInstance = GetWorld()->GetGameInstance();
+		auto* AssetSubsystem = GameInstance->GetSubsystem<UAssetGameInstanceSubsystem>();
+
+		if (IsValid(AssetSubsystem))
+		{
+			if (const FItemTableInfo* Info = AssetSubsystem->FindItemInfo(Item->GetItemRowName()))
+			{
+				mIcon->SetIconImage(Info->IconImage);
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("ItemInfo is nullptr"));
+			}
+		}
 
 		if (Item->GetItemLayerType() == EItemWidgetLayerType::Layered)
 		{
 			mIcon->EnableCountText(true);
 			SetItemCount(Item->GetItemCount());
 		}
-
 		else
 		{
 			mIcon->EnableCountText(false);
 		}
 
+		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Icon Visible"));
 		mIcon->SetVisibility(ESlateVisibility::Visible);
 	}
 
@@ -90,4 +104,3 @@ void UGameSlotWidget::SetItemEquip(bool Equip)
 	UE_LOG(UELOG, Warning, TEXT("SetItemEquip"));
 	mIcon->SetEquip(Equip);
 }
-

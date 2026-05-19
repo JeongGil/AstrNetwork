@@ -2,9 +2,9 @@
 
 
 #include "InventoryWidget.h"
-#include "../../Player/InventoryComponent.h"
 #include "GameSlotWidget.h"
 #include "../../Etc/ItemObject.h"
+#include "../../Player/InventoryComponent.h"
 
 UInventoryWidget::UInventoryWidget(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer)
@@ -25,7 +25,7 @@ FReply UInventoryWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
 		return FReply::Unhandled();
 
 	// 마우스 위치가 TitleBar 안이 아니라면 처리하지 않는다.
-	if(!mTitleBar->GetCachedGeometry().IsUnderLocation(
+	if (!mTitleBar->GetCachedGeometry().IsUnderLocation(
 		InMouseEvent.GetScreenSpacePosition()))
 		return FReply::Unhandled();
 
@@ -57,12 +57,12 @@ FReply UInventoryWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FP
 	if (!mDragEnable)
 		return FReply::Unhandled();
 
-	FVector2D	CurrentMousePos = InMouseEvent.GetScreenSpacePosition();
+	FVector2D CurrentMousePos = InMouseEvent.GetScreenSpacePosition();
 
-	FVector2D	MouseDelta = CurrentMousePos - mDragStartPos;
+	FVector2D MouseDelta = CurrentMousePos - mDragStartPos;
 
 	// DPI Scale을 얻어온다.
-	float	ViewScale = UWidgetLayoutLibrary::GetViewportScale(this);
+	float ViewScale = UWidgetLayoutLibrary::GetViewportScale(this);
 
 	FVector2D WidgetPos = mWidgetPos + (MouseDelta / ViewScale);
 
@@ -71,11 +71,31 @@ FReply UInventoryWidget::NativeOnMouseMove(const FGeometry& InGeometry, const FP
 	return FReply::Handled();
 }
 
-void UInventoryWidget::InitInventory(class UInventoryComponent* Inventory)
+void UInventoryWidget::InitItemSlot(UInventoryComponent* Inventory)
 {
 	mInventory = Inventory;
 
-	int32	MaxCount = mInventory->GetInventoryMax();
+	int32 MaxCount = mInventory->GetInventoryMax();
+
+	for (int32 i = 0; i < MaxCount; ++i)
+	{
+		FString SlotName = TEXT("WB_GameSlot_") + FString::FromInt(i + 1);
+
+		UGameSlotWidget* InvenSlot = Cast<UGameSlotWidget>(GetWidgetFromName(*SlotName));
+
+		//InvenSlot->SetInventoryComponent(mInventory);
+		InvenSlot->SetIndex(i);
+		InvenSlot->SetItem(nullptr);
+
+		mSlotArray.Add(InvenSlot);
+	}
+}
+
+void UInventoryWidget::InitInventory(UInventoryComponent* Inventory)
+{
+	mInventory = Inventory;
+
+	int32 MaxCount = mInventory->GetInventoryMax();
 
 	for (int32 i = 0; i < MaxCount; ++i)
 	{
@@ -89,12 +109,12 @@ void UInventoryWidget::InitInventory(class UInventoryComponent* Inventory)
 
 		mSlotArray.Add(InvenSlot);
 
-		UItemObject* Item = mInventory->GetItem(i);
-
-		if (IsValid(Item))
-		{
-			mSlotArray[i]->SetItem(Item);
-		}
+		// UItemObject* Item = mInventory->GetItem(i);
+		//
+		// if (IsValid(Item))
+		// {
+		// 	mSlotArray[i]->SetItem(Item);
+		// }
 	}
 
 	mInventory->mItemChange.AddUObject(this, &UInventoryWidget::ChangeItem);
@@ -103,14 +123,22 @@ void UInventoryWidget::InitInventory(class UInventoryComponent* Inventory)
 	mInventory->mItemEquipChange.AddUObject(this, &UInventoryWidget::ChangeItemEquip);
 }
 
-void UInventoryWidget::ChangeItem(class UItemObject* Item, int32 Index)
+void UInventoryWidget::ChangeItem(UItemObject* Item, int32 Index)
 {
-	mSlotArray[Index]->SetItem(Item);
+	if (IsValid(mSlotArray[Index]))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Slot Is Complete"));
+		mSlotArray[Index]->SetItem(Item);
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Slot Is Nullptr"));
+	}
 }
 
 void UInventoryWidget::ChangeGold(int32 Gold)
 {
-	FString	Text = TEXT("Gold : ") + FString::FromInt(Gold);
+	FString Text = TEXT("Gold : ") + FString::FromInt(Gold);
 
 	mGold->SetText(FText::FromString(Text));
 }

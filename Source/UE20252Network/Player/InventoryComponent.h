@@ -23,8 +23,8 @@ public:
 	UInventoryComponent();
 
 protected:
-	UPROPERTY(VisibleAnywhere, Replicated, Category = "Inventory")
-	TArray<TObjectPtr<UItemObject>>	mItemList;
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_ItemList, Category = "Inventory")
+	TArray<TObjectPtr<UItemObject>> mItemList;
 
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	int32 mInventoryMaxCount = 30;
@@ -34,20 +34,22 @@ protected:
 
 	int32 mEquipWeaponIndex = -1;
 	FActiveGameplayEffectHandle mWeaponHandle;
-	TObjectPtr<UItemObject>	mEquipWeapon;
+	TObjectPtr<UItemObject> mEquipWeapon;
+
+	bool bConnectWidget = false;
 
 public:
-	int32 GetInventoryMax()	const
+	int32 GetInventoryMax() const
 	{
 		return mInventoryMaxCount;
 	}
 
-	int32 GetItemCount()	const
+	int32 GetItemCount() const
 	{
 		return mItemCount;
 	}
 
-	class UItemObject* GetItem(int32 Index)
+	UItemObject* GetItem(int32 Index)
 	{
 		return mItemList[Index];
 	}
@@ -58,17 +60,17 @@ public:
 	FInventoryItemCountChange mItemCountChange;
 	FInventoryItemEquipChange mItemEquipChange;
 
-
 protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void InitializeComponent();
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void InitializeComponent() override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 	virtual bool ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void AddItem(const FItemTableInfo* Info);
+	void AddItem(const FItemTableInfo* Info, FName ItemRowName);
 	void ChangeGold(int32 Gold);
 	void ItemInfoLoadComplete();
 	void UseItem(int32 Index);
@@ -86,7 +88,9 @@ private:
 	void RemoveItemAttack(int32 Index);
 
 public:
-	UFUNCTION(Client, Reliable)
-	void SetItemCli(UItemObject* Item, int32 Index);
-	void SetItemCli_Implementation(UItemObject* Item, int32 Index);
+	UFUNCTION()
+	void OnRep_ItemList();
+
+	void LoadItem();
+	void ConnectWidget();
 };
