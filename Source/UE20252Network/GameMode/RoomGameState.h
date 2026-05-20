@@ -21,8 +21,22 @@ protected:
 	UPROPERTY(Replicated)
 	TArray<FString> PlayerNames;
 
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerListChange)
+	int32 PlayerCount;
+
 	virtual void BeginPlay() override;
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_PlayerListChange();
+
+	void NotifyPlayerListChange();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void RefreshPlayer();
+	void RefreshPlayer_Implementation();
+
+	void TryRefreshPlayer();
 };

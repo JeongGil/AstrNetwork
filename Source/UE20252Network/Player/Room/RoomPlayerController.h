@@ -23,11 +23,7 @@ private:
 	TObjectPtr<URoomWidget> RoomWidget;
 
 public:
-	UFUNCTION(Client, Reliable)
 	void RefreshPlayer();
-	void RefreshPlayer_Implementation();
-
-	void RefreshWidget();
 
 protected:
 	virtual void BeginPlay() override;

@@ -13,23 +13,16 @@ ARoomPlayerController::ARoomPlayerController()
 	bShowMouseCursor = true;
 }
 
-void ARoomPlayerController::RefreshPlayer_Implementation()
-{
-	RefreshWidget();
-}
-
-void ARoomPlayerController::RefreshWidget()
+void ARoomPlayerController::RefreshPlayer()
 {
 	auto* RoomState = GetWorld()->GetGameState<ARoomGameState>();
 	if (!IsValid(RoomState))
 	{
+		GetWorldTimerManager().SetTimerForNextTick(this, &ARoomPlayerController::RefreshPlayer);
 		return;
 	}
 
-	for (const auto& PS : RoomState->PlayerArray)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, PS->GetPlayerName());
-	}
+	RoomState->TryRefreshPlayer();
 }
 
 void ARoomPlayerController::BeginPlay()
@@ -52,6 +45,8 @@ void ARoomPlayerController::BeginPlay()
 				RoomWidget->AddToViewport();
 			}
 		}
+
+		RefreshPlayer();
 	}
 }
 

@@ -21,4 +21,7 @@ public:
 		const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
+
+private:
+	void PlayerListChange();
 };

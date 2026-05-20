@@ -27,9 +27,24 @@ APlayerController* ARoomGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRol
 void ARoomGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+
+	auto* RoomGS = GetGameState<ARoomGameState>();
+	if (IsValid(RoomGS))
+	{
+		RoomGS->NotifyPlayerListChange();
+	}
 }
 
 void ARoomGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
+}
+
+void ARoomGameMode::PlayerListChange()
+{
+	auto* RoomGS = GetGameState<ARoomGameState>();
+	if (IsValid(RoomGS))
+	{
+		RoomGS->NotifyPlayerListChange();
+	}
 }
