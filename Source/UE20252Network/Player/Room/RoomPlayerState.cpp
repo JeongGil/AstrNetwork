@@ -8,8 +8,28 @@
 
 ARoomPlayerState::ARoomPlayerState()
 {
+	SetReplicates(true);
+
 	bConnected = false;
 	PlayerDisplayName = TEXT("Unknown");
+}
+
+void ARoomPlayerState::TransitionReady()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	bReady = !bReady;
+
+	auto* GS = GetWorld()->GetGameState<ARoomGameState>();
+	if (IsValid(GS))
+	{
+		GS->AddReadyCount(bReady);
+	}
+
+	OnRep_Ready();
 }
 
 void ARoomPlayerState::SetPlayerDisplayName(const FString& Name)
@@ -39,6 +59,7 @@ void ARoomPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ARoomPlayerState, PlayerDisplayName);
 	DOREPLIFETIME(ARoomPlayerState, bConnected);
 	DOREPLIFETIME(ARoomPlayerState, UserSlotNumber);
+	DOREPLIFETIME(ARoomPlayerState, bReady);
 }
 
 void ARoomPlayerState::BeginPlay()
@@ -59,4 +80,8 @@ void ARoomPlayerState::BroadcastPlayerListUpdate()
 		GS->NotifyPlayerListChange();
 	}
 
+}
+
+void ARoomPlayerState::OnRep_Ready()
+{
 }

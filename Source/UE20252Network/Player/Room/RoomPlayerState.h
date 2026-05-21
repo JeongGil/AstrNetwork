@@ -27,7 +27,17 @@ private:
 	UPROPERTY(Replicated)
 	int32 UserSlotNumber;
 
+	UPROPERTY(ReplicatedUsing=OnRep_Ready)
+	bool bReady = false;
+
 public:
+	[[nodiscard]] bool IsReady() const
+	{
+		return bReady;
+	}
+
+	void TransitionReady();
+
 	[[nodiscard]] FString GetPlayerDisplayName() const
 	{
 		return PlayerDisplayName;
@@ -62,4 +72,7 @@ private:
 	void OnRep_PlayerInfo();
 
 	void BroadcastPlayerListUpdate();
+
+	UFUNCTION()
+	void OnRep_Ready();
 };

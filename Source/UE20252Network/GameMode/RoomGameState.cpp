@@ -3,6 +3,8 @@
 
 #include "RoomGameState.h"
 
+#include "Net/UnrealNetwork.h"
+#include "UE20252Network/Player/Room/RoomPlayerController.h"
 #include "UE20252Network/Player/Room/RoomPlayerState.h"
 
 ARoomGameState::ARoomGameState()
@@ -34,6 +36,41 @@ TArray<ARoomPlayerState*> ARoomGameState::GetConnectedPlayers() const
 	return ConnectedPlayers;
 }
 
+void ARoomGameState::AddReadyCount(bool bAdd, bool bLogout)
+{
+	if (bAdd)
+	{
+		++ReadyCount;
+	}
+	else
+	{
+		--ReadyCount;
+	}
+
+	auto* RoomPC = GetWorld()->GetFirstPlayerController<ARoomPlayerController>();
+
+	const int32 Count = bLogout ? 2 : 1;
+
+	if (PlayerArray.Num() - Count == ReadyCount)
+	{
+		if (IsValid(RoomPC))
+		{
+			RoomPC->ReadyForAll(true);
+		}
+	}
+	else
+	{
+		if (IsValid(RoomPC))
+		{
+			RoomPC->ReadyForAll(false);
+		}
+	}
+}
+
+void ARoomGameState::OnRep_ReadyCount()
+{
+}
+
 void ARoomGameState::BeginPlay()
 {
 	Super::BeginPlay();
@@ -42,6 +79,8 @@ void ARoomGameState::BeginPlay()
 void ARoomGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ARoomGameState, ReadyCount);
 }
 
 void ARoomGameState::NotifyPlayerListChange()

@@ -3,8 +3,11 @@
 
 #include "RoomWidget.h"
 
+#include "Components/Button.h"
 #include "Components/ListView.h"
+#include "Components/TextBlock.h"
 #include "UE20252Network/Player/Room/PlayerEntryObject.h"
+#include "UE20252Network/Player/Room/RoomPlayerController.h"
 #include "UE20252Network/Player/Room/RoomPlayerState.h"
 
 URoomWidget::URoomWidget(const FObjectInitializer& ObjectInitializer) :
@@ -46,7 +49,44 @@ void URoomWidget::PlayerLogout(TArray<ARoomPlayerState*> Array, const FString& L
 	}
 }
 
+void URoomWidget::SetButtonText(const FString& Text)
+{
+	mButtonText->SetText(FText::FromString(Text));
+}
+
+void URoomWidget::SetButtonEnable(bool bEnable)
+{
+	mStartButton->SetIsEnabled(bEnable);
+}
+
+void URoomWidget::EnableReadyButton()
+{
+	ButtonType = ERoomButtonType::Ready;
+}
+
+void URoomWidget::ButtonClick()
+{
+	auto* PC = GetOwningPlayer<ARoomPlayerController>();
+	if (ButtonType == ERoomButtonType::Ready)
+	{
+		if (IsValid(PC))
+		{
+			bReady = !bReady;
+			PC->UserReady();
+		}
+	}
+	else
+	{
+		if (IsValid(PC))
+		{
+			PC->TransitionMain();
+		}
+	}
+}
+
 void URoomWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
+
+	mStartButton->OnClicked.AddDynamic(this, &URoomWidget::ButtonClick);
 }

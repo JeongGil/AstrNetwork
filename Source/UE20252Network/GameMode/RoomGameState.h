@@ -24,7 +24,19 @@ public:
 	FOnPlayerListChange OnPlayerListChanged;
 	FOnPlayerLogout OnPlayerLogout;
 
+protected:
+	UPROPERTY(ReplicatedUsing=OnRep_ReadyCount)
+	int32 ReadyCount = 0;
+
+public:
 	TArray<ARoomPlayerState*> GetConnectedPlayers() const;
+
+	[[nodiscard]] int32 GetReadyCount() const
+	{
+		return ReadyCount;
+	}
+
+	void AddReadyCount(bool bAdd, bool bLogout = false);
 
 protected:
 	virtual void BeginPlay() override;
@@ -40,4 +52,7 @@ public:
 
 protected:
 	virtual void OnRep_ReplicatedHasBegunPlay() override;
+
+	UFUNCTION()
+	void OnRep_ReadyCount();
 };

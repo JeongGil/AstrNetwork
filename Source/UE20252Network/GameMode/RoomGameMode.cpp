@@ -49,6 +49,11 @@ void ARoomGameMode::Logout(AController* Exiting)
 			if (IsValid(PS))
 			{
 				GS->NotifyPlayerLogout(PS->GetPlayerDisplayName());
+
+				if (PS->IsReady())
+				{
+					GS->AddReadyCount(false, true);
+				}
 			}
 		}
 	}
@@ -67,4 +72,9 @@ void ARoomGameMode::LoginPlayerState(APlayerController* NewPlayer)
 		PS->SetPlayerDisplayName(PlayerName);
 		PS->SetConnected(true);
 	}
+}
+
+void ARoomGameMode::TransitionLevel(const FString& URL)
+{
+	GetWorld()->ServerTravel(URL);
 }

@@ -3,8 +3,10 @@
 
 #include "RoomPlayerController.h"
 
+#include "RoomPlayerState.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerState.h"
+#include "UE20252Network/GameMode/RoomGameMode.h"
 #include "UE20252Network/GameMode/RoomGameState.h"
 #include "UE20252Network/UI/Room/RoomWidget.h"
 
@@ -46,6 +48,33 @@ void ARoomPlayerController::OnPlayerLogout(const FString& PlayerName)
 	}
 }
 
+void ARoomPlayerController::UserReady_Implementation()
+{
+	auto* RoomPS = GetPlayerState<ARoomPlayerState>();
+	if (!IsValid(RoomPS))
+	{
+		return;
+	}
+
+	RoomPS->TransitionReady();
+}
+
+void ARoomPlayerController::ReadyForAll_Implementation(bool bReady)
+{
+	RoomWidget->SetButtonEnable(bReady);
+}
+
+void ARoomPlayerController::TransitionMain_Implementation()
+{
+	auto* GM = GetWorld()->GetAuthGameMode<ARoomGameMode>();
+	if (!IsValid(GM))
+	{
+		return;
+	}
+
+	GM->TransitionLevel(TEXT("/Game/Levels/Main?listen=False"));
+}
+
 void ARoomPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -69,6 +98,17 @@ void ARoomPlayerController::BeginPlay()
 		}
 
 		GetWorldTimerManager().SetTimer(TimerHandle, this, &ARoomPlayerController::RegisterGameState, 0.1f, true);
+
+		if (HasAuthority())
+		{
+			RoomWidget->SetButtonText(TEXT("시    작"));
+			RoomWidget->SetButtonEnable(false);
+		}
+		else
+		{
+			RoomWidget->EnableReadyButton();
+			RoomWidget->SetButtonText(TEXT("준    비"));
+		}
 	}
 }
 

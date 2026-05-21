@@ -27,4 +27,5 @@ public:
 	virtual void Logout(AController* Exiting) override;
 
 	void LoginPlayerState(APlayerController* NewPlayer);
+	void TransitionLevel(const FString& URL);
 };

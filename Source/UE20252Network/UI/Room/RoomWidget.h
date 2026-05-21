@@ -6,8 +6,18 @@
 #include "UE20252Network/UI/BaseUserWidget.h"
 #include "RoomWidget.generated.h"
 
+class UTextBlock;
+class UButton;
 class ARoomPlayerState;
 class UListView;
+
+UENUM()
+enum class ERoomButtonType : uint8
+{
+	Start,
+	Ready,
+};
+
 /**
  *
  */
@@ -23,9 +33,25 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	TObjectPtr<UListView> mPlayerList;
 
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UTextBlock> mButtonText;
+
+	UPROPERTY(meta=(BindWidget))
+	TObjectPtr<UButton> mStartButton;
+
+	ERoomButtonType ButtonType = ERoomButtonType::Start;
+	bool bReady = false;
+
 public:
 	void RefreshPlayerList(TArray<ARoomPlayerState*> Array);
 	void PlayerLogout(TArray<ARoomPlayerState*> Array, const FString& LogoutPlayerName);
+
+	void SetButtonText(const FString& Text);
+	void SetButtonEnable(bool bEnable);
+	void EnableReadyButton();
+
+	UFUNCTION()
+	void ButtonClick();
 
 protected:
 	virtual void NativeOnInitialized() override;

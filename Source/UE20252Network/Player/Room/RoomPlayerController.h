@@ -33,6 +33,18 @@ public:
 	UFUNCTION()
 	void OnPlayerLogout(const FString& PlayerName);
 
+	UFUNCTION(Server, Reliable)
+	void UserReady();
+	void UserReady_Implementation();
+
+	UFUNCTION(Client, Reliable)
+	void ReadyForAll(bool bReady);
+	void ReadyForAll_Implementation(bool bReady);
+
+	UFUNCTION(Server, Reliable)
+	void TransitionMain();
+	void TransitionMain_Implementation();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* aPawn) override;
