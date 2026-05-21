@@ -17,11 +17,14 @@ class UE20252NETWORK_API ARoomGameMode : public AGameModeBase
 public:
 	ARoomGameMode();
 
+private:
+	int32 PlayerJoinOrder = 0;
+
+public:
 	virtual APlayerController* Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal,
 		const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 
-private:
-	void PlayerListChange();
+	void LoginPlayerState(APlayerController* NewPlayer);
 };

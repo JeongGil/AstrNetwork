@@ -22,8 +22,16 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<URoomWidget> RoomWidget;
 
+	FTimerHandle TimerHandle;
+
 public:
-	void RefreshPlayer();
+	void RegisterGameState();
+
+	UFUNCTION()
+	void OnPlayerListChanged();
+
+	UFUNCTION()
+	void OnPlayerLogout(const FString& PlayerName);
 
 protected:
 	virtual void BeginPlay() override;

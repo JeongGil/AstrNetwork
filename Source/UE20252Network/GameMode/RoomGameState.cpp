@@ -3,66 +3,70 @@
 
 #include "RoomGameState.h"
 
-#include "GameFramework/PlayerState.h"
-#include "Net/UnrealNetwork.h"
-#include "UE20252Network/Player/Room/RoomPlayerController.h"
+#include "UE20252Network/Player/Room/RoomPlayerState.h"
 
 ARoomGameState::ARoomGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+TArray<ARoomPlayerState*> ARoomGameState::GetConnectedPlayers() const
+{
+	TArray<ARoomPlayerState*> ConnectedPlayers;
+
+	for (auto& PS : PlayerArray)
+	{
+		auto* RoomPS = Cast<ARoomPlayerState>(PS);
+		if (IsValid(RoomPS))
+		{
+			if (RoomPS->IsConnected())
+			{
+				ConnectedPlayers.Add(RoomPS);
+			}
+		}
+	}
+
+	ConnectedPlayers.Sort([](const auto& A, const auto& B)
+	{
+		return A.GetUserSlot() < B.GetUserSlot();
+	});
+
+	return ConnectedPlayers;
+}
+
 void ARoomGameState::BeginPlay()
 {
 	Super::BeginPlay();
-
-	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Blue, TEXT("GameState Begin"));
 }
 
 void ARoomGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ARoomGameState, PlayerNames);
-	DOREPLIFETIME(ARoomGameState, PlayerCount);
-}
-
-void ARoomGameState::OnRep_PlayerListChange()
-{
-	// auto* PC = Cast<ARoomPlayerController>(GetWorld()->GetFirstPlayerController());
-	// if (IsValid(PC))
-	// {
-	// 	PC->RefreshPlayer();
-	// }
-
-	for (const auto& Player : PlayerArray)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Blue,
-		                                 FString::Printf(TEXT("%s Login"), *Player->GetName()));
-	}
 }
 
 void ARoomGameState::NotifyPlayerListChange()
 {
-	// if (HasAuthority())
-	// {
-	// 	// OnRep_PlayerListChange();
-	// }
-}
-
-void ARoomGameState::RefreshPlayer_Implementation()
-{
-	for (const auto& Player : PlayerArray)
+	if (OnPlayerListChanged.IsBound())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Blue,
-		                                 FString::Printf(TEXT("%s Login"), *Player->GetName()));
+		OnPlayerListChanged.Broadcast();
 	}
 }
 
-void ARoomGameState::TryRefreshPlayer()
+void ARoomGameState::NotifyPlayerLogout_Implementation(const FString& PlayerName)
 {
-	for (const auto& Player : PlayerArray)
+	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, FString::Printf(TEXT("%s Logout"), *PlayerName));
+
+	if (OnPlayerLogout.IsBound())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, Player->GetPlayerName());
+		OnPlayerLogout.Broadcast(PlayerName);
 	}
+
+	// NotifyPlayerListChange();
+}
+
+void ARoomGameState::OnRep_ReplicatedHasBegunPlay()
+{
+	Super::OnRep_ReplicatedHasBegunPlay();
+
+	NotifyPlayerListChange();
 }

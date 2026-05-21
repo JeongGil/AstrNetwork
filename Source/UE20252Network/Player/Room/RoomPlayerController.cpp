@@ -13,16 +13,37 @@ ARoomPlayerController::ARoomPlayerController()
 	bShowMouseCursor = true;
 }
 
-void ARoomPlayerController::RefreshPlayer()
+void ARoomPlayerController::RegisterGameState()
 {
 	auto* RoomState = GetWorld()->GetGameState<ARoomGameState>();
-	if (!IsValid(RoomState))
+	if (IsValid(RoomState))
 	{
-		GetWorldTimerManager().SetTimerForNextTick(this, &ARoomPlayerController::RefreshPlayer);
-		return;
-	}
+		RoomState->OnPlayerListChanged.AddDynamic(this, &ARoomPlayerController::OnPlayerListChanged);
 
-	RoomState->TryRefreshPlayer();
+		RoomState->OnPlayerLogout.AddDynamic(this, &ARoomPlayerController::OnPlayerLogout);
+
+		OnPlayerListChanged();
+
+		GetWorldTimerManager().ClearTimer(TimerHandle);
+	}
+}
+
+void ARoomPlayerController::OnPlayerListChanged()
+{
+	if (IsValid(RoomWidget))
+	{
+		auto* RoomState = GetWorld()->GetGameState<ARoomGameState>();
+		RoomWidget->RefreshPlayerList(RoomState->GetConnectedPlayers());
+	}
+}
+
+void ARoomPlayerController::OnPlayerLogout(const FString& PlayerName)
+{
+	if (IsValid(RoomWidget))
+	{
+		auto* RoomState = GetWorld()->GetGameState<ARoomGameState>();
+		RoomWidget->PlayerLogout(RoomState->GetConnectedPlayers(), PlayerName);
+	}
 }
 
 void ARoomPlayerController::BeginPlay()
@@ -36,7 +57,8 @@ void ARoomPlayerController::BeginPlay()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("WidgetCreate"));
 
-		auto* RoomWidgetClass = LoadClass<URoomWidget>(this, TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Room/WB_Room.WB_Room_C'"));
+		auto* RoomWidgetClass = LoadClass<URoomWidget>(
+			this, TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/UI/Room/WB_Room.WB_Room_C'"));
 		if (IsValid(RoomWidgetClass))
 		{
 			RoomWidget = CreateWidget<URoomWidget>(this, RoomWidgetClass);
@@ -46,7 +68,7 @@ void ARoomPlayerController::BeginPlay()
 			}
 		}
 
-		RefreshPlayer();
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &ARoomPlayerController::RegisterGameState, 0.1f, true);
 	}
 }
 

@@ -6,6 +6,10 @@
 #include "GameFramework/GameStateBase.h"
 #include "RoomGameState.generated.h"
 
+class ARoomPlayerState;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerListChange);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerLogout, const FString&, PlayerName);
+
 /**
  *
  */
@@ -17,26 +21,23 @@ class UE20252NETWORK_API ARoomGameState : public AGameStateBase
 public:
 	ARoomGameState();
 
+	FOnPlayerListChange OnPlayerListChanged;
+	FOnPlayerLogout OnPlayerLogout;
+
+	TArray<ARoomPlayerState*> GetConnectedPlayers() const;
+
 protected:
-	UPROPERTY(Replicated)
-	TArray<FString> PlayerNames;
-
-	UPROPERTY(ReplicatedUsing = OnRep_PlayerListChange)
-	int32 PlayerCount;
-
 	virtual void BeginPlay() override;
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UFUNCTION()
-	void OnRep_PlayerListChange();
-
 	void NotifyPlayerListChange();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void RefreshPlayer();
-	void RefreshPlayer_Implementation();
+	void NotifyPlayerLogout(const FString& PlayerName);
+	void NotifyPlayerLogout_Implementation(const FString& PlayerName);
 
-	void TryRefreshPlayer();
+protected:
+	virtual void OnRep_ReplicatedHasBegunPlay() override;
 };
