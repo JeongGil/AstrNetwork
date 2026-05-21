@@ -132,18 +132,14 @@ void AMonsterGAS::BeginPlay()
 
 	if (HasAuthority())
 	{
-		const FMonsterInfo* Info = AssetSubSystem->FindMonsterInfo(mDataName);
-
-		if (!Info)
+		if (AssetSubSystem->IsMonsterInfoLoaded())
 		{
-			// 정보를 얻어오지 못한 경우에는 비동기 로딩이 아직 완료되지 않았다는 의미이다. 그러므로 서브시스템에
-			// 함수를 등록하여 로딩이 완료된 후 데이터 세팅을 할 수 있게 한다.
-			AssetSubSystem->mMonsterInfoLoadDelegate.AddUObject(this, &AMonsterGAS::MonsterInfoLoadComplete);
-
-			return;
+			MonsterInfoLoadComplete();
 		}
-
-		MonsterInfoLoadComplete();
+		else
+		{
+			AssetSubSystem->mMonsterInfoLoadDelegate.AddUObject(this, &AMonsterGAS::MonsterInfoLoadComplete);
+		}
 	}
 }
 

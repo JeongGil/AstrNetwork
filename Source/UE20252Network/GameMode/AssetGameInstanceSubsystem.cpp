@@ -11,13 +11,20 @@ void UAssetGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collectio
 {
 	Super::Initialize(Collection);
 
-	GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Subsystem Initialize"));
+	if (!bMonsterInfoLoaded)
+	{
+		LoadMonsterData();
+	}
 
-	LoadMonsterData();
+	if (!bItemInfoLoaded)
+	{
+		LoadItemData();
+	}
 
-	LoadItemData();
-
-	LoadDropItemData();
+	if (!bDropItemInfoLoaded)
+	{
+		LoadDropItemData();
+	}
 }
 
 void UAssetGameInstanceSubsystem::Deinitialize()
@@ -63,6 +70,8 @@ void UAssetGameInstanceSubsystem::MonsterInfoLoadComplete(FPrimaryAssetId LoadId
 	}
 
 	UE_LOG(UELOG, Warning, TEXT("MonsterInfo Load Complete"));
+
+	bMonsterInfoLoaded = true;
 
 	// 등록된 함수를 호출한다.
 	if (mMonsterInfoLoadDelegate.IsBound())
@@ -115,6 +124,8 @@ void UAssetGameInstanceSubsystem::ItemInfoLoadComplete(FPrimaryAssetId LoadId)
 		UE_LOG(UELOG, Warning, TEXT("ItemInfo DataTable Load Failed"));
 		return;
 	}
+
+	bItemInfoLoaded = true;
 
 	GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Blue, TEXT("ItemInfo Load Complete"));
 	UE_LOG(UELOG, Warning, TEXT("ItemInfo Load Complete"));
@@ -170,6 +181,8 @@ void UAssetGameInstanceSubsystem::DropItemInfoLoadComplete(FPrimaryAssetId LoadI
 	}
 
 	UE_LOG(UELOG, Warning, TEXT("DropItemInfo Load Complete"));
+
+	bDropItemInfoLoaded = true;
 
 	// 등록된 함수를 호출한다.
 	if (mDropItemInfoLoadDelegate.IsBound())

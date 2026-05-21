@@ -491,12 +491,14 @@ void UInventoryComponent::LoadItem()
 
 	const auto* GameInstance = GetWorld()->GetGameInstance();
 	auto* AssetSubsystem = GameInstance->GetSubsystem<UAssetGameInstanceSubsystem>();
-	if (AssetSubsystem->GetItemInfoLoadComplete())
+	if (AssetSubsystem->IsItemInfoLoaded())
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Item Load Complete"));
 		ItemInfoLoadComplete();
 	}
 	else
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 1000.f, FColor::Red, TEXT("Item Load Pending"));
 		AssetSubsystem->mItemInfoLoadDelegate.AddUObject(this, &UInventoryComponent::ItemInfoLoadComplete);
 	}
 }

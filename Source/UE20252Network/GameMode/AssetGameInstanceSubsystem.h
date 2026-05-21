@@ -10,7 +10,7 @@
 DECLARE_MULTICAST_DELEGATE(FOnMonsterDataLoad);
 
 /**
- * 
+ *
  */
 UCLASS()
 class UE20252NETWORK_API UAssetGameInstanceSubsystem : public UGameInstanceSubsystem
@@ -19,9 +19,18 @@ class UE20252NETWORK_API UAssetGameInstanceSubsystem : public UGameInstanceSubsy
 
 protected:
 	//TMap<FString, TObjectPtr<UDataTable>>	mTableMap;
+	UPROPERTY()
 	TObjectPtr<UDataTable>	mMonsterInfoTable;
+
+	UPROPERTY()
 	TObjectPtr<UDataTable>	mItemInfoTable;
+
+	UPROPERTY()
 	TObjectPtr<UDataTable>	mDropItemInfoTable;
+
+	bool bMonsterInfoLoaded = false;
+	bool bItemInfoLoaded = false;
+	bool bDropItemInfoLoaded = false;
 
 public:
 	FOnMonsterDataLoad	mMonsterInfoLoadDelegate;
@@ -31,8 +40,22 @@ public:
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection);
 	virtual void Deinitialize();
-	
-public:
+
+	[[nodiscard]] bool IsMonsterInfoLoaded() const
+	{
+		return bMonsterInfoLoaded;
+	}
+
+	[[nodiscard]] bool IsItemInfoLoaded() const
+	{
+		return bItemInfoLoaded;
+	}
+
+	[[nodiscard]] bool IsDropItemInfoLoaded() const
+	{
+		return bDropItemInfoLoaded;
+	}
+
 	void LoadMonsterData();
 
 	UFUNCTION()
@@ -42,11 +65,6 @@ public:
 
 public:
 	void LoadItemData();
-
-	bool GetItemInfoLoadComplete()	const
-	{
-		return IsValid(mItemInfoTable);
-	}
 
 	UFUNCTION()
 	void ItemInfoLoadComplete(FPrimaryAssetId LoadId);
