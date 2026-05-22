@@ -490,4 +490,5 @@ ETeamAttitude::Type APlayerCharacterGAS::GetTeamAttitudeTowards(const AActor& Ot
 
 void APlayerCharacterGAS::SvrNormalAttack_Implementation()
 {
+	UE_LOG(UELOG, Warning, TEXT("Base APlayerCharacterGAS SvrNormalAttack_Implementation called (Override failed?)"));
 }

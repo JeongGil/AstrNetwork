@@ -35,7 +35,7 @@ AWraithGAS::AWraithGAS()
 	// UClass를 얻어올때는 마지막에 반드시 _C 를 붙여주어야 한다.
 	/*static ConstructorHelpers::FClassFinder<UAnimInstance>	AnimClass(TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Shinbi/ABPShinbiTest.ABPShinbiTest_C'"));*/
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimClass(
-		TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Wraith/ABPWraithTemplate.ABPWraithTemplate_C'"));
+		TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Wraith/ABPWraithTemplate1.ABPWraithTemplate1_C'"));
 
 	// SkeletalMeshComponent에 애니메이션 블루프린트 클래스를 지정하여 사용하게 한다.
 	if (AnimClass.Succeeded())
@@ -51,6 +51,15 @@ void AWraithGAS::BeginPlay()
 {
 	// Super : 부모클래스를 의미한다.
 	Super::BeginPlay();
+
+	if (IsValid(mAnimInst))
+	{
+		UE_LOG(UELOG, Warning, TEXT("WraithGAS mAnimInst assigned successfully in BeginPlay"));
+	}
+	else
+	{
+		UE_LOG(UELOG, Warning, TEXT("WraithGAS mAnimInst failed to assign in BeginPlay"));
+	}
 }
 
 // Called every frame
@@ -66,43 +75,76 @@ void AWraithGAS::InputAttack()
 
 void AWraithGAS::Attack_Server_Implementation()
 {
+	UE_LOG(UELOG, Warning, TEXT("Wraith attack server implementation called"));
 	Attack_Execution();
 }
 
 void AWraithGAS::Attack_Execution_Implementation()
 {
+	UE_LOG(UELOG, Warning, TEXT("Wraith attack execution called"));
 	if (IsValid(mAnimInst))
 	{
+		// 재생하려는 몽타주 정보를 로그로 남깁니다.
+		if (mAnimInst->mAttackMontage)
+		{
+			UE_LOG(UELOG, Warning, TEXT("Playing Attack Montage: [%s]"), *mAnimInst->mAttackMontage->GetName());
+		}
+		else
+		{
+			UE_LOG(UELOG, Warning, TEXT("mAttackMontage is NULL in mAnimInst"));
+		}
+
 		mAnimInst->PlayAttack();
+	}
+	else
+	{
+		UE_LOG(UELOG, Error, TEXT("mAnimInst is invalid in WraithGAS"));
 	}
 }
 
 void AWraithGAS::NormalAttack()
 {
+	UE_LOG(UELOG, Warning, TEXT("Wraith NormalAttack execution started on server. Actor Name: [%s]"), *GetName());
+	
 	// 총알을 스폰시킨다.
-	/*FVector	MuzzleLoc = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
+	FVector MuzzleLoc = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
+	FRotator SpawnRot = GetControlRotation();
 
-	FActorSpawnParameters	param;
+	UE_LOG(UELOG, Warning, TEXT("Spawning WraithBullet at Location: [%s], Rotation: [%s]"), *MuzzleLoc.ToString(), *SpawnRot.ToString());
 
-	param.SpawnCollisionHandlingOverride =
-		ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FActorSpawnParameters param;
+	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	param.Owner = this;
+	param.Instigator = this;
 
-	TObjectPtr<AWraithBullet>	Bullet = GetWorld()->SpawnActor<AWraithBullet>(
-		MuzzleLoc, GetActorRotation(), param);
+	TObjectPtr<AWraithBullet> Bullet = GetWorld()->SpawnActor<AWraithBullet>(
+		MuzzleLoc, SpawnRot, param);
 
-	Bullet->SetAttack(GetPlayerState<AMainPlayerState>()->GetAttack());
-	Bullet->SetOwnerController(GetController());*/
+	if (IsValid(Bullet))
+	{
+		UE_LOG(UELOG, Warning, TEXT("WraithBullet spawned successfully! Bullet Name: [%s]"), *Bullet->GetName());
+		
+		if (GetPlayerState())
+		{
+			float AttackPower = GetPlayerState<AMainPlayerState>()->GetAttack();
+			Bullet->SetAttack(AttackPower);
+			UE_LOG(UELOG, Warning, TEXT("Set Bullet Attack Power: [%f]"), AttackPower);
+		}
+		else
+		{
+			UE_LOG(UELOG, Warning, TEXT("PlayerState is NULL, cannot set Attack Power"));
+		}
+		
+		Bullet->SetOwnerController(GetController());
+	}
+	else
+	{
+		UE_LOG(UELOG, Error, TEXT("FAILED to spawn WraithBullet in NormalAttack"));
+	}
 }
 
 void AWraithGAS::SvrNormalAttack_Implementation()
 {
-	FVector MuzzleLoc = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
-
-	FActorSpawnParameters param;
-	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	auto* Bullet = GetWorld()->SpawnActor<AWraithBullet>(MuzzleLoc, GetControlRotation(), param);
-
-	Bullet->SetAttack(GetPlayerState<AMainPlayerState>()->GetAttack());
-	Bullet->SetOwnerController(GetController());
+	UE_LOG(UELOG, Warning, TEXT("SvrNormalAttack implementation called"));
+	NormalAttack();
 }
