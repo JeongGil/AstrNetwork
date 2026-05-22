@@ -55,6 +55,12 @@ void UPlayerAnimInstance::PlayAttack()
 	if (!IsValid(mAttackMontage))
 	{
 		UE_LOG(UELOG, Warning, TEXT("Not Valid Attack Montage"));
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Not Valid Attack Montage"));
+		}
+
 		return;
 	}
 
@@ -71,20 +77,26 @@ void UPlayerAnimInstance::PlayAttack()
 			Montage_Play(mAttackMontage, 1.f);
 
 			// 섹션을 원하는 섹션으로 이동할 수 있다.
-			Montage_JumpToSection(mAttackSection[0], mAttackMontage);
+			if (mAttackSection.Num() > 0)
+			{
+				Montage_JumpToSection(mAttackSection[0], mAttackMontage);
+			}
 		}
 	}
 
 	// 콤보가 가능한 상태라면
 	else if (mComboEnable)
 	{
-		// Num() : 배열 수를 반환한다.
-		mAttackIndex = (mAttackIndex + 1) % mAttackSection.Num();
+		if (mAttackSection.Num() > 0)
+		{
+			// Num() : 배열 수를 반환한다.
+			mAttackIndex = (mAttackIndex + 1) % mAttackSection.Num();
 
-		Montage_Play(mAttackMontage, 1.f);
+			Montage_Play(mAttackMontage, 1.f);
 
-		// 섹션을 원하는 섹션으로 이동할 수 있다.
-		Montage_JumpToSection(mAttackSection[mAttackIndex], mAttackMontage);
+			// 섹션을 원하는 섹션으로 이동할 수 있다.
+			Montage_JumpToSection(mAttackSection[mAttackIndex], mAttackMontage);
+		}
 
 		mComboEnable = false;
 	}
@@ -100,28 +112,21 @@ void UPlayerAnimInstance::PlayAttack()
 // (my / -360 + 1) * w
 void UPlayerAnimInstance::PlaySkill1()
 {
+	if (!IsValid(mSkill1Montage))
+	{
+		return;
+	}
+
 	// 시작 위치를 0으로 만들어준다.
 	Montage_SetPosition(mSkill1Montage, 0.f);
 
 	Montage_Play(mSkill1Montage, 1.f);
 
 	// 섹션을 원하는 섹션으로 이동할 수 있다.
-	Montage_JumpToSection(mSkill1Section[mSkill1Index], mSkill1Montage);
-
-	//if (!Montage_IsPlaying(mSkill1Montage))
-	//{
-	//	// 시작 위치를 0으로 만들어준다.
-	//	Montage_SetPosition(mSkill1Montage, 0.f);
-
-	//	Montage_Play(mSkill1Montage, 1.f);
-
-	//	// 섹션을 원하는 섹션으로 이동할 수 있다.
-	//	Montage_JumpToSection(mSkill1Section[mSkill1Index], mSkill1Montage);
-	//}
-
-	//else
-	//{
-	//}
+	if (mSkill1Section.Num() > 0)
+	{
+		Montage_JumpToSection(mSkill1Section[mSkill1Index], mSkill1Montage);
+	}
 }
 
 void UPlayerAnimInstance::ClearSkill1()

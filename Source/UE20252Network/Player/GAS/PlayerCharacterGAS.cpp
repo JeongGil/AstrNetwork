@@ -260,8 +260,11 @@ void APlayerCharacterGAS::RotationKey(const FInputActionValue& Value)
 	//AddControllerYawInput(Axis.X);
 	mSpringArm->AddRelativeRotation(FRotator(Axis.Y, Axis.X, 0.0));
 
-	mAnimInst->AddViewPitch(Axis.Y);
-	mAnimInst->AddViewYaw(Axis.X);
+	if (IsValid(mAnimInst))
+	{
+		mAnimInst->AddViewPitch(Axis.Y);
+		mAnimInst->AddViewYaw(Axis.X);
+	}
 }
 
 void APlayerCharacterGAS::JumpKey(const FInputActionValue& Value)

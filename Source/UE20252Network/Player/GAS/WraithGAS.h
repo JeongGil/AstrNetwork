@@ -6,7 +6,7 @@
 #include "WraithGAS.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class UE20252NETWORK_API AWraithGAS : public APlayerCharacterGAS
@@ -28,6 +28,16 @@ public:
 protected:
 	virtual void InputAttack();
 
+	UFUNCTION(Server, Reliable)
+	void Attack_Server();
+	void Attack_Server_Implementation();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Attack_Execution();
+	void Attack_Execution_Implementation();
+
 public:
 	virtual void NormalAttack();
+
+	virtual void SvrNormalAttack_Implementation() override;
 };

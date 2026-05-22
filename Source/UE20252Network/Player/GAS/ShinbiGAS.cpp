@@ -115,7 +115,10 @@ void AShinbiGAS::Skill1()
 {
 	if (!IsValid(mMagicCircleActor))
 	{
-		mAnimInst->PlaySkill1();
+		if (IsValid(mAnimInst))
+		{
+			mAnimInst->PlaySkill1();
+		}
 	}
 }
 
@@ -281,7 +284,10 @@ void AShinbiGAS::Attack_Server_Implementation()
 
 void AShinbiGAS::Attack_Execution_Implementation()
 {
-	mAnimInst->PlayAttack();
+	if (IsValid(mAnimInst))
+	{
+		mAnimInst->PlayAttack();
+	}
 }
 
 void AShinbiGAS::SvrNormalAttack_Implementation()

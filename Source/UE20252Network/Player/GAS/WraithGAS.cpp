@@ -4,6 +4,7 @@
 #include "WraithGAS.h"
 #include "../PlayerAnimInstance.h"
 #include "../MainPlayerState.h"
+#include "UE20252Network/Etc/WraithBullet.h"
 
 AWraithGAS::AWraithGAS()
 {
@@ -12,7 +13,8 @@ AWraithGAS::AWraithGAS()
 
 	// SkeletalMesh를 지정한다.
 	// Mesh의 참조를 얻어온다.
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh>	MeshAsset(TEXT("/Script/Engine.SkeletalMesh'/Game/ParagonWraith/Characters/Heroes/Wraith/Skins/LunarOps/Meshes/Wraith_LunarOps.Wraith_LunarOps'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT(
+		"/Script/Engine.SkeletalMesh'/Game/ParagonWraith/Characters/Heroes/Wraith/Meshes/Wraith.Wraith'"));
 
 	// GetMesh() : ACharacter 클래스에서 제공하는 SkeletalMeshComponent를 얻어오기 위한 함수이다.
 	// SkeletalMeshComponent는 ACharacter 클래스에서 private으로 되어 있기 때문에 GetMesh를
@@ -32,7 +34,8 @@ AWraithGAS::AWraithGAS()
 	// 애니메이션 블루프린트 클래스를 얻어온다.
 	// UClass를 얻어올때는 마지막에 반드시 _C 를 붙여주어야 한다.
 	/*static ConstructorHelpers::FClassFinder<UAnimInstance>	AnimClass(TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Shinbi/ABPShinbiTest.ABPShinbiTest_C'"));*/
-	static ConstructorHelpers::FClassFinder<UAnimInstance>	AnimClass(TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Wraith/ABPWraithTemplate.ABPWraithTemplate_C'"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimClass(
+		TEXT("/Script/Engine.AnimBlueprint'/Game/Player/Wraith/ABPWraithTemplate.ABPWraithTemplate_C'"));
 
 	// SkeletalMeshComponent에 애니메이션 블루프린트 클래스를 지정하여 사용하게 한다.
 	if (AnimClass.Succeeded())
@@ -48,19 +51,30 @@ void AWraithGAS::BeginPlay()
 {
 	// Super : 부모클래스를 의미한다.
 	Super::BeginPlay();
-
 }
 
 // Called every frame
 void AWraithGAS::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AWraithGAS::InputAttack()
 {
-	mAnimInst->PlayAttack();
+	Attack_Server();
+}
+
+void AWraithGAS::Attack_Server_Implementation()
+{
+	Attack_Execution();
+}
+
+void AWraithGAS::Attack_Execution_Implementation()
+{
+	if (IsValid(mAnimInst))
+	{
+		mAnimInst->PlayAttack();
+	}
 }
 
 void AWraithGAS::NormalAttack()
@@ -80,4 +94,15 @@ void AWraithGAS::NormalAttack()
 	Bullet->SetOwnerController(GetController());*/
 }
 
+void AWraithGAS::SvrNormalAttack_Implementation()
+{
+	FVector MuzzleLoc = GetMesh()->GetSocketLocation(TEXT("Muzzle_01"));
 
+	FActorSpawnParameters param;
+	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	auto* Bullet = GetWorld()->SpawnActor<AWraithBullet>(MuzzleLoc, GetControlRotation(), param);
+
+	Bullet->SetAttack(GetPlayerState<AMainPlayerState>()->GetAttack());
+	Bullet->SetOwnerController(GetController());
+}

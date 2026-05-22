@@ -15,7 +15,8 @@ ADefaultGameMode::ADefaultGameMode()
 	// 이 함수는 클래스의 UClass 정보를 반환한다.
 	//DefaultPawnClass = AShinbi::StaticClass();
 	//DefaultPawnClass = AWraith::StaticClass();
-	DefaultPawnClass = AShinbiGAS::StaticClass();
+	// DefaultPawnClass = AShinbiGAS::StaticClass();
+	DefaultPawnClass = AWraithGAS::StaticClass();
 
 	PlayerStateClass = AMainPlayerState::StaticClass();
 
@@ -26,7 +27,7 @@ APlayerController* ADefaultGameMode::Login(UPlayer* NewPlayer, ENetRole InRemote
 	const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId,
 	FString& ErrorMessage)
 {
-	APlayerController* Result = Super::Login(NewPlayer, InRemoteRole, Portal, 
+	APlayerController* Result = Super::Login(NewPlayer, InRemoteRole, Portal,
 		Options, UniqueId, ErrorMessage);
 
 	int32	Job = 0;

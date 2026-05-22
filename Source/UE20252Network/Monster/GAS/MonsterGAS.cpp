@@ -419,7 +419,10 @@ void AMonsterGAS::CallbackHP(AActor* InstigatorActor)
 		UE_LOG(UELOG, Warning, TEXT("Death"));
 
 		// 죽는처리
-		mAnimInst->SetAnim(EMonsterNormalAnim::Death);
+		if (IsValid(mAnimInst))
+		{
+			mAnimInst->SetAnim(EMonsterNormalAnim::Death);
+		}
 
 		APlayerCharacterGAS* PlayerCharacter = Cast<APlayerCharacterGAS>(InstigatorActor);
 
@@ -470,7 +473,10 @@ void AMonsterGAS::CallbackHP(AActor* InstigatorActor)
 		{
 			mHit = true;
 
-			mAnimInst->Hit();
+			if (IsValid(mAnimInst))
+			{
+				mAnimInst->Hit();
+			}
 
 			GetWorldTimerManager().SetTimer(mHitTimer, this, &AMonsterGAS::HitEnd,
 				0.1f, false);

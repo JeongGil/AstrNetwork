@@ -17,13 +17,15 @@ AProjectileBase::AProjectileBase()
 	mMovement->SetUpdatedComponent(mBody);
 
 	mMovement->OnProjectileStop.AddDynamic(this, &AProjectileBase::ProjectileStop);
+
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
 void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
